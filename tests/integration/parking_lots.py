@@ -39,7 +39,7 @@ def test_update_parking_lot(headers):
         "longitude": -73.968285,
     }
     response = requests.put(f"{BASE_URL}/parking-lots/1", headers=headers, json=payload)
-    assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}, {response_json}"
+    assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}"
 
 def delete_parking_lot(headers):
     payload = {
