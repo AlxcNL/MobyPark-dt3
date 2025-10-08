@@ -12,7 +12,8 @@ def headers():
         "password": "strongpassword123",
         "name": "John Doe",
         "phone": "+1234567890",
-        "birth_year": 1990
+        "birth_year": 1990,
+        "role": "admin"
     }
     try:
         requests.post(f"{BASE_URL}/register", json=register_payload)
