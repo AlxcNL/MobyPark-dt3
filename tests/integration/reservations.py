@@ -84,15 +84,16 @@ def test_update_reservation(headers: dict) -> None:
         "start_time": "2020-05-17 00:00:00",
         "end_time": "2020-05-17 12:00:00",
         "status": "confirmed",
-        "cost": 10
+        "cost": 11
     }
     reservation_id = response_json["id"]
     response = requests.put(f"{BASE_URL}/reservations/{reservation_id}", headers=headers, json=payload)
+
     assert response.status_code == 200
 
 # sad flow
 def test_get_non_existing_reservation(headers: dict) -> None:
-    response = requests.get(f"{BASE_URL}/reservations/5000", headers=headers)
+    response = requests.get(f"{BASE_URL}/reservations/9999", headers=headers)
     assert response.status_code == 404
     
 def test_non_existing_vehicle(headers: dict) -> None:
@@ -106,6 +107,57 @@ def test_non_existing_vehicle(headers: dict) -> None:
     }
     response = requests.post(f"{BASE_URL}/reservations", headers=headers, json=payload)
     assert response.status_code == 403
+
+def test_delete_non_existing(headers: dict) -> None:
+    response = requests.delete(f"{BASE_URL}/reservations/9999", headers=headers)
+    assert response.status_code == 404
+
+def test__update_non_existing_reservation(headers: dict) -> None:
+    payload = {
+        "vehicles_id": 1,
+        "parking_lots_id": 1,
+        "start_time": "2020-05-17 00:00:00",
+        "end_time": "2020-05-17 12:00:00",
+        "status": "confirmed",
+        "cost": 11
+    }
+    response = requests.put(f"{BASE_URL}/reservations/9999", headers=headers)
+    assert response.status_code >= 400
+
+def test__update_reservation_validation(headers: dict) -> None:
+    vehicle_payload = {
+        "license_plate": generate_code(),
+        "make": "Toyodata",
+        "model": "Cocdsarolla",
+        "color": "Red",
+        "year": 2020
+    }
+    vehicle_response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=vehicle_payload)
+    response_json = vehicle_response.json()
+
+    payload = {
+        "vehicles_id": response_json["id"],
+        "parking_lots_id": 1,
+        "start_time": "2020-05-17 00:00:00",
+        "end_time": "2020-05-17 12:00:00",
+        "status": "confirmed",
+        "cost": 10
+    }
+    response = requests.post(f"{BASE_URL}/reservations", headers=headers, json=payload)
+    response_json = response.json()
+
+    payload = {
+        "vehicles_id": response_json["id"],
+        "parking_lots_id": -1,
+        "start_time": "2020-d-17 00:00:00",
+        "end_time": "2020-05-17 12:00:00",
+        "status": "confirmed",
+        "cost": 11
+    }
+    reservation_id = response_json["id"]
+    response = requests.put(f"{BASE_URL}/reservations/{reservation_id}", headers=headers, json=payload)
+
+    assert response.status_code >= 400
 
 def generate_code() -> str:
     letters = ''.join(random.choices(string.ascii_uppercase, k=3))
