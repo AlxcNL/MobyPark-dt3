@@ -3,15 +3,15 @@ import requests
 BASE_URL = "http://localhost:8000"
 
 # happy flow
-def test___get_all_parking_lots(headers):
+def test___get_all_parking_lots(headers: dict) -> None:
     response = requests.get(f"{BASE_URL}/parking-lots", headers=headers)
     assert response.status_code == 200
 
-def test_z_get_parking_lot(headers):
+def test_z_get_parking_lot(headers: dict) -> None:
     response = requests.get(f"{BASE_URL}/parking-lots/1", headers=headers)
     assert response.status_code == 200
 
-def test__add_parking_lot(headers):
+def test__add_parking_lot(headers: dict) -> None:
     payload = {
         "name": "Central Park Garage",
         "location": "Downtown",
@@ -26,7 +26,7 @@ def test__add_parking_lot(headers):
     response = requests.post(f"{BASE_URL}/parking-lots", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}, {response.text}"
 
-def test_update_parking_lot(headers):
+def test_update_parking_lot(headers: dict) -> None:
     payload = {
         "name": "Central Park Garage updated",
         "location": "Downtown",
@@ -41,7 +41,7 @@ def test_update_parking_lot(headers):
     response = requests.put(f"{BASE_URL}/parking-lots/1", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}"
 
-def delete_parking_lot(headers):
+def delete_parking_lot(headers: dict) -> None:
     payload = {
         "name": "Central Park Garage",
         "location": "Downtown",
@@ -63,11 +63,11 @@ def delete_parking_lot(headers):
     assert response.status_code == 200
 
 # sad flow
-def test_get_parking_lot_non_existing(headers):
+def test_get_parking_lot_non_existing(headers: dict) -> None:
     response = requests.get(f"{BASE_URL}/parking-lots/9999", headers=headers)
     assert response.status_code == 404
 
-def test_add_parking_lot_empty_required_field(headers):
+def test_add_parking_lot_empty_required_field(headers: dict) -> None:
     payload = {
         "name": "",
         "location": "Downtown",
@@ -82,7 +82,7 @@ def test_add_parking_lot_empty_required_field(headers):
     response = requests.post(f"{BASE_URL}/parking-lots", headers=headers, json=payload)
     assert response.status_code >= 400
 
-def test_update_parking_lot_validation(headers):
+def test_update_parking_lot_validation(headers: dict) -> None:
     payload = {
         "name": "Central Park Garage updated",
         "location": "Downtown",
@@ -97,6 +97,6 @@ def test_update_parking_lot_validation(headers):
     response = requests.put(f"{BASE_URL}/parking-lots/1", headers=headers, json=payload)
     assert response.status_code >= 400
 
-def test_delete_non_existing(headers):
+def test_delete_non_existing(headers: dict) -> None:
     response =  requests.delete(f"{BASE_URL}/parking-lots/9999", headers=headers)
     assert response.status_code != 200

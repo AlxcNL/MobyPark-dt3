@@ -1,11 +1,10 @@
-# conftest.py
 import pytest
 import requests
 
 BASE_URL = "http://localhost:8000"
 
 @pytest.fixture(scope="session")
-def headers():
+def headers() -> dict:
     register_payload = {
         "username": "johndoe",
         "email": "johndoe@example.com",

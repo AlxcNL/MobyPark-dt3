@@ -2,43 +2,30 @@ import requests
 
 BASE_URL = "http://localhost:8000"
 
-# happy flow
-def test_see_profile():
-    payload = {
-        "username": "meneer3", 
-        "password": "secret"
-    }
-    
-    requests.post(f"{BASE_URL}/register", json=payload)
-    response = requests.post(f"{BASE_URL}/login", json=payload)
-    json_response = response.json()
-    session_token = json_response["session_token"]
-    print(session_token)
-    
-    headers = {
-        "Authorization": session_token
-    }
+#happy flow
+def test_get_profile(headers: dict) -> None:
     response = requests.get(f"{BASE_URL}/profile", headers=headers)
-    
     assert response.status_code == 200
 
-# sad flow
-
-def test_see_profile_no_token():
+def test_update_profile(headers: dict) -> None:
     payload = {
-        "username": "meneer3", 
-        "password": "secret"
+        "name": "updated",
+        "phone": "+31682662864",
+        "birth_year": 1999
     }
-    
-    requests.post(f"{BASE_URL}/register", json=payload)
-    response = requests.post(f"{BASE_URL}/login", json=payload)
-    json_response = response.json()
-    session_token = json_response["session_token"]
-    print(session_token)
-    
-    headers = {
-        "Authorization": ""
+    response = requests.put(f"{BASE_URL}/profile", headers=headers, json=payload)
+
+    assert response.status_code == 200
+#sad slow
+def test_updating_profile_validation(headers: dict) -> None:
+    payload = {
+        "name": 20,
+        "phone": "cjenfcfje",
+        "birth_year": "1999"
     }
-    response = requests.get(f"{BASE_URL}/profile", headers=headers)
-    
-    assert response.status_code == 401
+    response = requests.put(f"{BASE_URL}/profile", headers=headers, json=payload)
+    assert response.status_code == 422
+
+def test_get_profile_no_auth() -> None:
+    response = requests.get(f"{BASE_URL}/profile")
+    assert response.status_code == 403
