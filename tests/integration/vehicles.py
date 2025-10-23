@@ -3,33 +3,11 @@ import pytest
 
 BASE_URL = "http://localhost:8000"
 
-@pytest.fixture(scope="session")
-def headers():
-    payload = {
-        "username": "johndoe",
-        "email": "johndoe@example.com",
-        "password": "strongpassword123",
-        "name": "John Doe",
-        "phone": "+1234567890",
-        "birth_year": 1990
-    }
-    requests.post(f"{BASE_URL}/register", json=payload)
-    
-    payload = {
-        "username": "johndoe",
-        "password": "strongpassword123"
-    }
-    response = requests.post(f"{BASE_URL}/login", json=payload)
-    response.raise_for_status()
-    token = response.json()["access_token"]
-    
-    return {"Authorization": f"Bearer {token}"}
-
-def test___get_all_vehicles(headers):
+def test___get_all_vehicles(headers: dict) -> None:
     response = requests.get(f"{BASE_URL}/vehicles", headers=headers)
     assert response.status_code == 200
 
-def test_add_vehicle(headers):
+def test_add_vehicle(headers: dict) -> None:
     payload = {
         "license_plate": "AAC123",
         "make": "Toyoata",
@@ -40,7 +18,7 @@ def test_add_vehicle(headers):
     response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}, {response.text}"
 
-def test_get_vehicle(headers):
+def test_get_vehicle(headers : dict) -> None:
     payload = {
         "license_plate": "BCC111",
         "make": "Honda",
@@ -56,7 +34,7 @@ def test_get_vehicle(headers):
     response = requests.get(f"{BASE_URL}/vehicles/{vehicle_id}", headers=headers)
     assert response.status_code == 200
 
-def test_update_vehicle(headers):
+def test_update_vehicle(headers: dict) -> None:
     payload = {
         "license_plate": "ASAB333",
         "make": "Ford",
@@ -78,7 +56,7 @@ def test_update_vehicle(headers):
     response = requests.put(f"{BASE_URL}/vehicles/{vehicle_id}", headers=headers, json=payload)
     assert response.status_code == 200
 
-def test_deleting_vehicle(headers): 
+def test_deleting_vehicle(headers: dict) -> None:
     payload = {
         "license_plate": "SSAAA",
         "make": "Nissan",
@@ -101,15 +79,15 @@ def test_get_vehicles_no_auth():
     response = requests.get(f"{BASE_URL}/vehicles", headers=headers)
     assert response.status_code != 200
 
-def delete_non_existing_vehicle(headers):
+def delete_non_existing_vehicle(headers: dict) -> None:
     response = requests.delete(f"{BASE_URL}/vehicles/1000", headers=headers)
     assert response.status_code == 404
 
-def test__get_non_existing_vehicle(headers):
+def test__get_non_existing_vehicle(headers: dict) -> None:
     response = requests.get(f"{BASE_URL}/vehicles/1111", headers=headers)
     assert response.status_code == 200
 
-def test_update_non_existing_vehicle(headers):
+def test_update_non_existing_vehicle(headers: dict) -> None:
     payload = {
         "license_plate": "NON123",
         "make": "Honda",
@@ -120,7 +98,7 @@ def test_update_non_existing_vehicle(headers):
     response = requests.put(f"{BASE_URL}/vehicles/111", headers=headers, json=payload)
     assert response.status_code == 404
 
-def test_update_empty_string(headers):
+def test_update_empty_string(headers: dict) -> None:
     payload = {
         "license_plate": "",
         "make": "",

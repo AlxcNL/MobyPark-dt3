@@ -24,6 +24,9 @@ def test_login():
 
     assert response.status_code == 200
 
+def test_logout(headers: dict) -> None:
+    response = requests.post(f"{BASE_URL}/logout")
+    assert response.status_code == 200
 
 # sad flow
 def test_create_user_null_name():

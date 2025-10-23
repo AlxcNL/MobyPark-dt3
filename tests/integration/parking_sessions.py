@@ -57,7 +57,21 @@ def test_start_non_existing_parking_lot(headers: dict) -> None:
 def test_delete_non_existing_session(headers: dict) -> None:
     response = requests.delete(f"{BASE_URL}/parking-lots/1/sessions/9999", headers=headers)
     assert response.status_code >= 400
-    
 
+def test_update_non_existing_session(headers: dict) -> None:
+    payload = {
+        "parking_lots_id": 9999,
+        "vehicles_id": 9999
+    }
+    response = requests.put(f"{BASE_URL}/parking-lots/-9999/sessions/1", headers=headers, json=payload)
+    assert response.status_code == 405
+
+def test_stop_non_existing_session(headers: dict) -> None:
+    payload = {
+        "parking_lots_id": 9999,
+        "vehicles_id": 9999
+    }
+    response = requests.post(f"{BASE_URL}/parking-lots/-9999/sessions/stop", headers=headers, json=payload)
+    assert response.status_code == 405
     
     
