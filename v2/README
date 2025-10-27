@@ -7,3 +7,9 @@
      - docker compose up -d
 
     Dit start de API en alle benodigde services in de achtergrond.
+
+2. **Database initialiseren**  
+   Maak en initialiseer de database door vanuit de root "./v2":
+    - 'python tools/init.db'
+
+   Dit voert de `init.sql` uit en maakt alle tabellen aan.
