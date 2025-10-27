@@ -1,0 +1,9 @@
+## Project starten
+
+1. **Dependencies & services starten** 
+    *Voor de eerste keer opstarten* vanuit de root van het project "./v2":
+     - 'Docker build'
+    Vanuit de root van het project "./v2":
+     - docker compose up -d
+
+    Dit start de API en alle benodigde services in de achtergrond.
