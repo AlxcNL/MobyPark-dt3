@@ -1,10 +1,16 @@
+# Gebruik een officiële Python runtime als basisimage
 FROM python:3.11-slim
 
-WORKDIR /app
+# Stel de werkdirectory in de container in
+WORKDIR /code
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Kopieer de dependencies en installeer ze
+COPY ./requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-COPY . .
+# Kopieer de applicatiecode naar de werkdirectory
+COPY ./app /code/app
 
+# Commando om de applicatie te starten wanneer de container draait
+# --host 0.0.0.0 is essentieel om de app buiten de container bereikbaar te maken
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
