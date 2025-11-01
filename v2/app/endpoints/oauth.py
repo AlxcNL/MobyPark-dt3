@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from app.database import get_db
 from app import models, schemas
+from app.dependancies import get_current_user
 from app.security import (
     verify_password, hash_password,
     create_token, check_token,
@@ -50,3 +51,48 @@ async def logout(creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
     check_token(token)
     remove_token(token)
     return schemas.Message(message="Logged out successfully.")
+
+@router.get("/profile", response_model=schemas.User)
+async def get_profile(current_user: models.User = Depends(get_current_user)):
+    return current_user
+
+@router.put("/profile", response_model=schemas.Message)
+async def update_user(
+    payload: schemas.UserUpdate,
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    current_user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    changed = False
+    # safe profile fields
+    if payload.name is not None:
+        current_user.name = payload.name
+        changed = True
+    if payload.phone is not None:
+        current_user.phone = payload.phone
+        changed = True
+    if payload.birth_year is not None:
+        current_user.birth_year = payload.birth_year
+        changed = True
+
+    # optional password change
+    new_pw = getattr(payload, "password", None)
+    if new_pw:
+        current_user.password_hash = hash_password(new_pw)
+        changed = True
+        revoke = True
+    else:
+        revoke = False
+
+    if changed:
+        db.add(current_user)
+        await db.commit()
+    else:
+        return schemas.Message(message="No changes provided.")
+
+    if revoke:
+        token = creds.credentials
+        remove_token(token)
+        return schemas.Message(message="Password updated. Please log in again.")
+
+    return schemas.Message(message="Profile updated successfully.")

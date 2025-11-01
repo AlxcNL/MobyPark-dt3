@@ -1,6 +1,7 @@
 from __future__ import annotations
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Literal
+from datetime import datetime
 
 class Message(BaseModel):
     message: str
@@ -30,3 +31,24 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=6)
+
+
+class UserUpdate(BaseModel):
+    # update profile fields (not password)
+    name: Optional[str] = None
+    password: Optional[str] = Field(default=None, min_length=6)
+    phone: Optional[str] = None
+    birth_year: Optional[int] = None
+
+class User(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: Role
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    birth_year: Optional[int] = None
+    active: int
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
