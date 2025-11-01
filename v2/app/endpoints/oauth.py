@@ -1,14 +1,18 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
 from app import models, schemas
 from app.security import (
-    hash_password, verify_password, create_token, remove_all_tokens_for_user
+    verify_password, hash_password,
+    create_token, check_token,
+    remove_token, remove_all_tokens_for_user
 )
 
 router = APIRouter(prefix="", tags=["auth"])  
+bearer_scheme = HTTPBearer(auto_error=True)
 
 @router.post("/register", response_model=schemas.Message)
 async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
@@ -39,3 +43,10 @@ async def login(payload: schemas.LoginRequest, db: AsyncSession = Depends(get_db
     remove_all_tokens_for_user(user.id)
     token = create_token(user.id)
     return schemas.TokenResponse(access_token=token)
+
+@router.post("/logout")
+async def logout(creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    token = creds.credentials
+    check_token(token)
+    remove_token(token)
+    return schemas.Message(message="Logged out successfully.")
