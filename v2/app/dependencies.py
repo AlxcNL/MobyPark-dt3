@@ -35,3 +35,37 @@ def page_params(
 ) -> PageParams:
     return PageParams(limit=limit, offset=offset)
 
+def calculate_price(parking_lot: models.ParkingLot, start: datetime, stop: Optional[datetime] = None):
+    if stop is None:
+        stop = datetime.now(timezone.utc)
+
+    # ensure both aware UTC
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=timezone.utc)
+    else:
+        start = start.astimezone(timezone.utc)
+    stop = stop.astimezone(timezone.utc)
+
+    diff = stop - start
+    seconds = diff.total_seconds()
+    hours = int(math.ceil(seconds / 3600.0))
+
+    # coerce tariffs
+    t = float(parking_lot.tariff) if parking_lot.tariff is not None else 0.0
+    dtf = float(parking_lot.daytariff) if parking_lot.daytariff is not None else 999.0
+
+    if seconds < 180:
+        price = 0.0
+        days = 0
+    elif stop.date() > start.date():
+        days = diff.days + 1
+        price = dtf * days
+    else:
+        days = 0
+        price = min(t * hours, dtf)
+
+    return (round(price, 2), hours, days)
+
+def generate_payment_hash(sid, vehicle: schemas.VehicleBase):
+    return md5(str(sid + vehicle.license_plate).encode("utf-8")).hexdigest()
+
