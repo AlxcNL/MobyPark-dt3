@@ -69,3 +69,10 @@ def calculate_price(parking_lot: models.ParkingLot, start: datetime, stop: Optio
 def generate_payment_hash(sid, vehicle: schemas.VehicleBase):
     return md5(str(sid + vehicle.license_plate).encode("utf-8")).hexdigest()
 
+def generate_transaction_validation_hash():
+    return str(uuid.uuid4())
+
+def tr_hash(session_id: int, license_plate: str) -> str:
+    # match legacy transaction key (md5 of sid + licenseplate)
+    base = f"{session_id}{license_plate}"
+    return md5(base.encode("utf-8")).hexdigest()
