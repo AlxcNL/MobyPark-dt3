@@ -76,3 +76,22 @@ def tr_hash(session_id: int, license_plate: str) -> str:
     # match legacy transaction key (md5 of sid + licenseplate)
     base = f"{session_id}{license_plate}"
     return md5(base.encode("utf-8")).hexdigest()
+
+async def sum_paid_eur(db: AsyncSession, session_id: int, thash: str) -> float:
+    # Prefer summing by session_id (new schema). If 0, fall back to legacy 'hash' column.
+    res = await db.execute(
+        select(func.coalesce(func.sum(models.Payment.amount), 0)).where(
+            models.Payment.sessions_id == session_id
+        )
+    )
+    cents = res.scalar_one() or 0
+    if cents:
+        return round(cents / 100.0, 2)
+
+    res = await db.execute(
+        select(func.coalesce(func.sum(models.Payment.amount), 0)).where(
+            models.Payment.hash == thash
+        )
+    )
+    cents = res.scalar_one() or 0
+    return round(cents / 100.0, 2)
