@@ -11,7 +11,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
-from app.database import Base
+from .database import Base
 
 
 class User(Base):
@@ -31,3 +31,9 @@ class User(Base):
     __table_args__ = (
         CheckConstraint("role in ('user','admin')", name="ck_users_role"),
     )
+
+class ParkingLot():
+    pass
+
+class Payment():
+    pass

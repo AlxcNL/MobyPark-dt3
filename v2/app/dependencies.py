@@ -6,9 +6,10 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
-from app.database import get_db
-from app import models, schemas
-from app.security import check_token
+from .database import get_db
+from .models import User, ParkingLot, Payment
+from .schemas import VehicleBase
+from .security import check_token
 
 from typing import Optional
 from datetime import datetime, timezone
@@ -29,7 +30,7 @@ async def get_current_user(
 ):
     print(creds)
     user_id = check_token(creds.credentials)
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -45,7 +46,7 @@ def page_params(
 ) -> PageParams:
     return PageParams(limit=limit, offset=offset)
 
-def calculate_price(parking_lot: models.ParkingLot, start: datetime, stop: Optional[datetime] = None):
+def calculate_price(parking_lot: ParkingLot, start: datetime, stop: Optional[datetime] = None):
     if stop is None:
         stop = datetime.now(timezone.utc)
 
@@ -76,7 +77,7 @@ def calculate_price(parking_lot: models.ParkingLot, start: datetime, stop: Optio
 
     return (round(price, 2), hours, days)
 
-def generate_payment_hash(sid, vehicle: schemas.VehicleBase):
+def generate_payment_hash(sid, vehicle: VehicleBase):
     return md5(str(sid + vehicle.license_plate).encode("utf-8")).hexdigest()
 
 def generate_transaction_validation_hash():
@@ -90,8 +91,8 @@ def tr_hash(session_id: int, license_plate: str) -> str:
 async def sum_paid_eur(db: AsyncSession, session_id: int, thash: str) -> float:
     # Prefer summing by session_id (new schema). If 0, fall back to legacy 'hash' column.
     res = await db.execute(
-        select(func.coalesce(func.sum(models.Payment.amount), 0)).where(
-            models.Payment.sessions_id == session_id
+        select(func.coalesce(func.sum(Payment.amount), 0)).where(
+            Payment.sessions_id == session_id
         )
     )
     cents = res.scalar_one() or 0
@@ -99,8 +100,8 @@ async def sum_paid_eur(db: AsyncSession, session_id: int, thash: str) -> float:
         return round(cents / 100.0, 2)
 
     res = await db.execute(
-        select(func.coalesce(func.sum(models.Payment.amount), 0)).where(
-            models.Payment.hash == thash
+        select(func.coalesce(func.sum(Payment.amount), 0)).where(
+            Payment.hash == thash
         )
     )
     cents = res.scalar_one() or 0
