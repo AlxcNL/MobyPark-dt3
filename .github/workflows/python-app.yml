@@ -55,7 +55,7 @@ jobs:
           python -m unittest discover -s tests/unit -p "test*.py"
 
   build-and-push:
-    needs: testing, integration-tests
+    needs: [testing, integration-tests]
     runs-on: ubuntu-latest
     
     steps:
@@ -106,3 +106,4 @@ jobs:
           uvicorn app.main:app --host 0.0.0.0 --port 8000 &
           SERVER_PID=$!
           popd
+          python -m pytest -q tests/integration -o python_files=*.py
