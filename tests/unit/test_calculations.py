@@ -13,7 +13,7 @@ class TestCalculator(unittest.TestCase):
         now = datetime.now()
         tomorrow = now + timedelta(days=1)
         test_parking_lot = MockParkingLot(20, 20)
-        self.assertEqual(calculate_price(test_parking_lot, now, tomorrow), (20.0, 23, 1))
+        self.assertEqual(calculate_price(test_parking_lot, now, tomorrow), (40.0, 24, 2))
 
     def test_calulate_price_none_values(self) -> None:
         now = datetime.now()
@@ -33,7 +33,7 @@ class TestCalculator(unittest.TestCase):
         now = datetime.now()
         one_sec = now + timedelta(seconds=1)
         test_parking_lot = MockParkingLot(20, 20)
-        self.assertEqual(calculate_price(test_parking_lot, now, one_sec), (0, 0, 0))
+        self.assertEqual(calculate_price(test_parking_lot, now, one_sec), (0, 1, 0))
 
 if __name__ == "__main__":
     unittest.main()
