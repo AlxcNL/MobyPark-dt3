@@ -1,6 +1,5 @@
 import unittest
-from v2.app.dependencies import generate_payment_hash, generate_transaction_validation_hash, tr_hash
-from datetime import datetime, timedelta
+from v2.app.dependencies import generate_payment_hash, tr_hash
 
 class MockVehicle:
     def __init__(self, license_plate):
