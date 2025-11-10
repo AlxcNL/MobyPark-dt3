@@ -39,7 +39,7 @@ jobs:
     steps:
     - name: Unit testing
       run: |
-        python -m unittest discover -s tests/unit -p "*.py"
+        python -m unittest discover -s tests/unit -t .
 
   build-and-push:
     needs: lint
