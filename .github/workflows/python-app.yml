@@ -55,7 +55,7 @@ jobs:
           python -m unittest discover -s tests/unit -p "test*.py"
 
   build-and-push:
-    needs: testing
+    needs: testing, integration-tests
     runs-on: ubuntu-latest
     
     steps:
