@@ -61,6 +61,8 @@ def calculate_price(parking_lot: ParkingLot, start: datetime, stop: Optional[dat
     seconds = diff.total_seconds()
     hours = int(math.ceil(seconds / 3600.0))
 
+    if parking_lot.tariff < 0 or parking_lot.daytariff < 0:
+        raise ValueError("Negative value is not possible")
     # coerce tariffs
     t = float(parking_lot.tariff) if parking_lot.tariff is not None else 0.0
     dtf = float(parking_lot.daytariff) if parking_lot.daytariff is not None else 999.0

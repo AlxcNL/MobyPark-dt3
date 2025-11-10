@@ -34,6 +34,13 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 v2 --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+  unit-testing:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Unit testing
+      run: |
+        python -m unittest tests.unit.calculations
+
   build-and-push:
     needs: lint
     runs-on: ubuntu-latest

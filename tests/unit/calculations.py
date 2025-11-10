@@ -23,7 +23,7 @@ class TestCalculator(unittest.TestCase):
 
     def test_negative_values(self) -> None:
         now = datetime.now()
-        tomorrow = now + timedelta(day=1)
+        tomorrow = now + timedelta(days=1)
         test_parking_lot = MockParkingLot(20, -20)
         with self.assertRaises(ValueError):
             calculate_price(test_parking_lot, now, tomorrow)
