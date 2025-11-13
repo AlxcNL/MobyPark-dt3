@@ -3,6 +3,8 @@ from app.endpoints import oauth
 
 app = FastAPI(title="MobyPark API v2")
 app.include_router(oauth.router)
+app.include_router(vehicles.router)
+
 
 @app.get("/")
 async def root():
