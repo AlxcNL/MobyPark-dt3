@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import (
-    String,
-    Integer,
-    DateTime,
     CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
     func,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from .database import Base
 
 
@@ -28,9 +30,16 @@ class User(Base):
     birth_year: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     active: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
+    vehicles: Mapped[list["Vehicle"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
     __table_args__ = (
         CheckConstraint("role in ('user','admin')", name="ck_users_role"),
     )
+
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
@@ -53,20 +62,10 @@ class Vehicle(Base):
 
     user: Mapped["User"] = relationship(back_populates="vehicles")
 
-    sessions: Mapped[List["Session"]] = relationship(
-        back_populates="vehicle",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-    )
 
-    reservations: Mapped[List["Reservation"]] = relationship(
-        back_populates="vehicle",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-    )
-
-class ParkingLot():
+class ParkingLot:
     pass
 
-class Payment():
+
+class Payment:
     pass
