@@ -107,3 +107,28 @@ async def update_vehicle(
         await db.refresh(vehicle)
         
         return vehicle
+
+@router.delete("/vehicles/{vehicle_id}", response_model=dict)
+async def delete_vehicle(
+    vehicle_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    check_token(token.credentials)
+    
+    result = await db.execute(
+        select(models.Vehicle).where(
+            models.Vehicle.id == vehicle_id,
+            models.Vehicle.users_id == current_user.id
+        )
+    )
+    vehicle = result.scalar_one_or_none()
+    
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    
+    await db.delete(vehicle)
+    await db.commit()
+    
+    return {"detail": "Vehicle deleted successfully"}
