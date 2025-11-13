@@ -18,24 +18,24 @@ async def create_vehicle(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
-):
-    check_token(token.credentials)
+    ):
+        check_token(token.credentials)
 
-    new_vehicle = models.Vehicle(
-        users_id=current_user.id,
-        license_plate=vehicle.license_plate,
-        license_plate_clean=licenceplate_clean(vehicle.license_plate),
-        make=vehicle.make,
-        model=vehicle.model,
-        color=vehicle.color,
-        year=vehicle.year
-    )
-    
-    db.add(new_vehicle)
-    await db.commit()
-    await db.refresh(new_vehicle)
-    
-    return new_vehicle
+        new_vehicle = models.Vehicle(
+            users_id=current_user.id,
+            license_plate=vehicle.license_plate,
+            license_plate_clean=licenceplate_clean(vehicle.license_plate),
+            make=vehicle.make,
+            model=vehicle.model,
+            color=vehicle.color,
+            year=vehicle.year
+        )
+        
+        db.add(new_vehicle)
+        await db.commit()
+        await db.refresh(new_vehicle)
+        
+        return new_vehicle
 
 @router.get("/vehicles", response_model=List[schemas.Vehicle])
 async def get_vehicles(
@@ -43,14 +43,14 @@ async def get_vehicles(
     current_user: models.User = Depends(get_current_user),
     page: PageParams = Depends(page_params),
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
-):
-    check_token(token.credentials)
-    
-    query = select(models.Vehicle).where(models.Vehicle.users_id == current_user.id).offset(page.offset).limit(page.limit)
-    result = await db.execute(query)
-    vehicles = result.scalars().all()
-    
-    return vehicles
+    ):
+        check_token(token.credentials)
+        
+        query = select(models.Vehicle).where(models.Vehicle.users_id == current_user.id).offset(page.offset).limit(page.limit)
+        result = await db.execute(query)
+        vehicles = result.scalars().all()
+        
+        return vehicles
 
 @router.get("/vehicles/{user_id}", response_model=List[schemas.Vehicle])
 async def get_vehicles_for_user(
@@ -59,15 +59,15 @@ async def get_vehicles_for_user(
     current_user: models.User = Depends(get_current_user),
     page: PageParams = Depends(page_params),
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
-):
-    check_token(token.credentials)
-    require_admin(current_user)
-    
-    query = select(models.Vehicle).where(models.Vehicle.users_id == user_id).offset(page.offset).limit(page.limit)
-    result = await db.execute(query)
-    vehicles = result.scalars().all()
-    
-    return vehicles
+    ):
+        check_token(token.credentials)
+        require_admin(current_user)
+        
+        query = select(models.Vehicle).where(models.Vehicle.users_id == user_id).offset(page.offset).limit(page.limit)
+        result = await db.execute(query)
+        vehicles = result.scalars().all()
+        
+        return vehicles
 
 @router.put("/vehicles/{vehicle_id}", response_model=schemas.Vehicle)
 async def update_vehicle(
@@ -76,34 +76,34 @@ async def update_vehicle(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
-):
-    check_token(token.credentials)
-    
-    result = await db.execute(
-        select(models.Vehicle).where(
-            models.Vehicle.id == vehicle_id,
-            models.Vehicle.users_id == current_user.id
+    ):
+        check_token(token.credentials)
+        
+        result = await db.execute(
+            select(models.Vehicle).where(
+                models.Vehicle.id == vehicle_id,
+                models.Vehicle.users_id == current_user.id
+            )
         )
-    )
-    vehicle = result.scalar_one_or_none()
-    
-    if not vehicle:
-        raise HTTPException(status_code=404, detail="Vehicle not found")
-    
-    if vehicle_update.license_plate is not None:
-        vehicle.license_plate = vehicle_update.license_plate
-        vehicle.license_plate_clean = licenceplate_clean(vehicle_update.license_plate)
-    if vehicle_update.make is not None:
-        vehicle.make = vehicle_update.make
-    if vehicle_update.model is not None:
-        vehicle.model = vehicle_update.model
-    if vehicle_update.color is not None:
-        vehicle.color = vehicle_update.color
-    if vehicle_update.year is not None:
-        vehicle.year = vehicle_update.year
-    
-    db.add(vehicle)
-    await db.commit()
-    await db.refresh(vehicle)
-    
-    return vehicle
+        vehicle = result.scalar_one_or_none()
+        
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+        if vehicle_update.license_plate is not None:
+            vehicle.license_plate = vehicle_update.license_plate
+            vehicle.license_plate_clean = licenceplate_clean(vehicle_update.license_plate)
+        if vehicle_update.make is not None:
+            vehicle.make = vehicle_update.make
+        if vehicle_update.model is not None:
+            vehicle.model = vehicle_update.model
+        if vehicle_update.color is not None:
+            vehicle.color = vehicle_update.color
+        if vehicle_update.year is not None:
+            vehicle.year = vehicle_update.year
+        
+        db.add(vehicle)
+        await db.commit()
+        await db.refresh(vehicle)
+        
+        return vehicle

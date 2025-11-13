@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.endpoints import oauth
+from app.endpoints import oauth, vehicles
 
 app = FastAPI(title="MobyPark API v2")
 app.include_router(oauth.router)
