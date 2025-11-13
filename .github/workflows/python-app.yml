@@ -49,9 +49,8 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run unit tests
-        working-directory: v2
         run: |
-          pytest -v --maxfail=1 --disable-warnings --cov=. --cov-report=term-missing
+          pytest -v --maxfail=1 --disable-warnings --cov=v2 --cov-report=term-missing tests/unit
 
   integration-tests:
     needs: testing
