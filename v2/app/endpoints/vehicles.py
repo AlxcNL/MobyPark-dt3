@@ -68,3 +68,42 @@ async def get_vehicles_for_user(
     vehicles = result.scalars().all()
     
     return vehicles
+
+@router.put("/vehicles/{vehicle_id}", response_model=schemas.Vehicle)
+async def update_vehicle(
+    vehicle_id: int,
+    vehicle_update: schemas.VehicleUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    check_token(token.credentials)
+    
+    result = await db.execute(
+        select(models.Vehicle).where(
+            models.Vehicle.id == vehicle_id,
+            models.Vehicle.users_id == current_user.id
+        )
+    )
+    vehicle = result.scalar_one_or_none()
+    
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+    
+    if vehicle_update.license_plate is not None:
+        vehicle.license_plate = vehicle_update.license_plate
+        vehicle.license_plate_clean = licenceplate_clean(vehicle_update.license_plate)
+    if vehicle_update.make is not None:
+        vehicle.make = vehicle_update.make
+    if vehicle_update.model is not None:
+        vehicle.model = vehicle_update.model
+    if vehicle_update.color is not None:
+        vehicle.color = vehicle_update.color
+    if vehicle_update.year is not None:
+        vehicle.year = vehicle_update.year
+    
+    db.add(vehicle)
+    await db.commit()
+    await db.refresh(vehicle)
+    
+    return vehicle
