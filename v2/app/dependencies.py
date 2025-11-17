@@ -108,3 +108,7 @@ async def sum_paid_eur(db: AsyncSession, session_id: int, thash: str) -> float:
     )
     cents = res.scalar_one() or 0
     return round(cents / 100.0, 2)
+
+def licenceplate_clean(license_plate: str) -> str:
+    pass
+
