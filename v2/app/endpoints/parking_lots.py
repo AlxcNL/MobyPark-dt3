@@ -95,3 +95,17 @@ async def update_parking_lot(lot_id: int, lot_update: schemas.UpdateParkingLot, 
     await db.refresh(lot)
 
     return schemas.Message(message="Parking lot updated successfully.")
+
+@router.delete("/parking-lots/{lot_id}", response_model=schemas.Message)
+async def delete_parking_lot(lot_id: int, db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme), current_user: models.User = Depends(get_current_user)):
+    require_admin(current_user)
+
+    result = await db.execute(select(models.ParkingLot).where(models.ParkingLot.id == lot_id))
+    lot = result.scalar_one_or_none()
+    if not lot:
+        raise HTTPException(status_code=404, detail="Parking lot not found")
+
+    await db.delete(lot)
+    await db.commit()
+
+    return schemas.Message(message="Parking lot deleted successfully.")
