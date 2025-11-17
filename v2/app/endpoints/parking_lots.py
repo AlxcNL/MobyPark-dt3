@@ -52,3 +52,11 @@ async def list_parking_lots(p: PageParams = Depends(page_params), db: AsyncSessi
     # thanks to from_attributes=True you can return ORM rows
     items = rows
     return schemas.Page(items=items, total=total, limit=p.limit, offset=p.offset)
+
+@router.get("/parking-lots/{lot_id}", response_model=schemas.ParkingLotDetails)
+async def get_parking_lot(lot_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    result = await db.execute(select(models.ParkingLot).where(models.ParkingLot.id == lot_id))
+    lot = result.scalar_one_or_none()
+    if not lot:
+        raise HTTPException(status_code=404, detail="Parking lot not found")
+    return lot
