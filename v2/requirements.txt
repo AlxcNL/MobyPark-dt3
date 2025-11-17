@@ -1,4 +1,5 @@
 fastapi
 uvicorn[standard]
-sqlalchemy
+sqlalchemy>=1.4
 aiosqlite
+ 
