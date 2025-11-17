@@ -60,3 +60,38 @@ async def get_parking_lot(lot_id: int, db: AsyncSession = Depends(get_db), curre
     if not lot:
         raise HTTPException(status_code=404, detail="Parking lot not found")
     return lot
+
+@router.put("/parking-lots/{lot_id}", response_model=schemas.Message)
+async def update_parking_lot(lot_id: int, lot_update: schemas.UpdateParkingLot, db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme), current_user: models.User = Depends(get_current_user)):
+    require_admin(current_user)
+
+    result = await db.execute(select(models.ParkingLot).where(models.ParkingLot.id == lot_id))
+    lot = result.scalar_one_or_none()
+    if not lot:
+        raise HTTPException(status_code=404, detail="Parking lot not found")
+
+    # Only update provided fields
+    if lot_update.name is not None:
+        lot.name = lot_update.name
+    if lot_update.location is not None:
+        lot.location = lot_update.location
+    if lot_update.address is not None:
+        lot.address = lot_update.address
+    if lot_update.capacity is not None:
+        lot.capacity = lot_update.capacity
+    if lot_update.reserved is not None:
+        lot.reserved = lot_update.reserved
+    if lot_update.tariff is not None:
+        lot.tariff = lot_update.tariff
+    if lot_update.daytariff is not None:
+        lot.daytariff = lot_update.daytariff
+    if lot_update.latitude is not None:
+        lot.latitude = lot_update.latitude
+    if lot_update.longitude is not None:
+        lot.longitude = lot_update.longitude
+
+    db.add(lot)
+    await db.commit()
+    await db.refresh(lot)
+
+    return schemas.Message(message="Parking lot updated successfully.")
