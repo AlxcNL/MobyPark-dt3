@@ -54,4 +54,33 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class VehicleBase(BaseModel):
+    license_plate: str
+    make: Optional[str] = None
+    model: Optional[str] = None
+    color: Optional[str] = None
+    year: Optional[int] = Field(default=None, ge=1900)
+
+
+class VehicleCreate(VehicleBase):
     pass
+
+class VehicleUpdate(VehicleBase):
+    license_plate: Optional[str] = None
+    make: Optional[str] = None
+    model: Optional[str] = None
+    color: Optional[str] = None
+    year: Optional[int] = Field(default=None, ge=1900)
+
+class Vehicle(BaseModel):
+    id: int
+    users_id: int
+    license_plate: str
+    license_plate_clean: str
+    make: Optional[str] = None
+    model: Optional[str] = None
+    color: Optional[str] = None
+    year: Optional[int] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
