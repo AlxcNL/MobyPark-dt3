@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from app.database import get_db
 from app import models, schemas
-from app.dependancies import get_current_user
+from app.dependencies import get_current_user
 from app.security import (
     verify_password, hash_password,
     create_token, check_token,
