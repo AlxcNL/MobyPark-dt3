@@ -130,5 +130,4 @@ async def delete_vehicle(
     
     await db.delete(vehicle)
     await db.commit()
-    
     return {"detail": "Vehicle deleted successfully"}

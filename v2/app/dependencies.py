@@ -111,4 +111,3 @@ async def sum_paid_eur(db: AsyncSession, session_id: int, thash: str) -> float:
 
 def licenceplate_clean(license_plate: str) -> str:
     pass
-
