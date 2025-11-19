@@ -46,3 +46,35 @@ async def create_reservation(
     await db.refresh(new_reservation)
     
     return new_reservation
+
+@router.get("/reservations", response_model=List[schemas.Reservation])
+async def get_reservations(
+    db: AsyncSession = Depends(get_db),
+    page: PageParams = Depends(page_params),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    check_token(token.credentials)
+    
+    query = select(models.Reservation).offset(page.offset).limit(page.limit)
+    
+    result = await db.execute(query)
+    reservations = result.scalars().all()
+    
+    return reservations
+
+@router.get("/reservations/{reservation_id}", response_model=schemas.Reservation)
+async def get_reservation(
+    reservation_id: int,
+    db: AsyncSession = Depends(get_db),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    check_token(token.credentials)
+    
+    result = await db.execute(select(models.Reservation).where(models.Reservation.id == reservation_id))
+    reservation = result.scalar_one_or_none()
+    
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    
+    return reservation
+
