@@ -1,19 +1,22 @@
+# app/models.py
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Optional
+from typing import List, Optional
+from datetime import datetime  # <-- add this
 
 from sqlalchemy import (
-    CheckConstraint,
-    DateTime,
-    ForeignKey,
-    Integer,
     String,
+    Integer,
+    DateTime,
+    Text,
+    ForeignKey,
+    CheckConstraint,
+    UniqueConstraint,
+    Float,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from .database import Base
+from app.database import Base
 
 
 class User(Base):
@@ -30,16 +33,22 @@ class User(Base):
     birth_year: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     active: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
-    vehicles: Mapped[list["Vehicle"]] = relationship(
+    __table_args__ = (
+        CheckConstraint("role in ('user','admin')", name="ck_users_role"),
+    )
+
+    vehicles: Mapped[List["Vehicle"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
 
-    __table_args__ = (
-        CheckConstraint("role in ('user','admin')", name="ck_users_role"),
+    payments_initiated: Mapped[List["Payment"]] = relationship(
+        back_populates="initiator",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        foreign_keys="Payment.initiator_users_id",
     )
-
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
@@ -62,45 +71,17 @@ class Vehicle(Base):
 
     user: Mapped["User"] = relationship(back_populates="vehicles")
 
-
-class ParkingLot:
-    pass
-
-
-class Payment:
-    pass
-
-class Reservation(Base):
-    __tablename__ = "reservation"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-
-    vehicles_id: Mapped[int] = mapped_column(
-        ForeignKey("vehicles.id", ondelete="CASCADE", onupdate="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    parking_lots_id: Mapped[int] = mapped_column(
-        ForeignKey("parking_lots.id", ondelete="CASCADE", onupdate="CASCADE"),
-        nullable=False,
-        index=True,
+    sessions: Mapped[List["Session"]] = relationship(
+        back_populates="vehicle",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
-    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    end_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    status: Mapped[str] = mapped_column(String, nullable=False, default="confirmed")
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-    cost: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-
-    __table_args__ = (
-        CheckConstraint(
-            "status in ('confirmed','completed','canceled')",
-            name="ck_reservation_status",
-        ),
+    reservations: Mapped[List["Reservation"]] = relationship(
+        back_populates="vehicle",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
-
-    parking_lot: Mapped["ParkingLot"] = relationship(back_populates="reservations")
-    vehicle: Mapped["Vehicle"] = relationship(back_populates="reservations")
 
 class ParkingLot(Base):
     __tablename__ = "parking_lots"
@@ -136,3 +117,110 @@ class ParkingLot(Base):
         passive_deletes=True,
     )
 
+class Session(Base):
+    __tablename__ = "sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    parking_lots_id: Mapped[int] = mapped_column(
+        ForeignKey("parking_lots.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    vehicles_id: Mapped[int] = mapped_column(
+        ForeignKey("vehicles.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    stop_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    cost: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    payment_status: Mapped[str] = mapped_column(String, nullable=False, default="pending")
+
+    __table_args__ = (
+        CheckConstraint(
+            "duration_minutes IS NULL OR duration_minutes >= 0",
+            name="ck_sessions_duration",
+        ),
+        CheckConstraint(
+            "payment_status in ('pending','completed')",
+            name="ck_sessions_payment_status",
+        ),
+    )
+
+    parking_lot: Mapped["ParkingLot"] = relationship(back_populates="sessions")
+    vehicle: Mapped["Vehicle"] = relationship(back_populates="sessions")
+
+    payments_session: Mapped[List["Payment"]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        foreign_keys="Payment.sessions_id",
+    )
+
+
+class Reservation(Base):
+    __tablename__ = "reservation"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    vehicles_id: Mapped[int] = mapped_column(
+        ForeignKey("vehicles.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    parking_lots_id: Mapped[int] = mapped_column(
+        ForeignKey("parking_lots.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    status: Mapped[str] = mapped_column(String, nullable=False, default="confirmed")
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    cost: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        CheckConstraint(
+            "status in ('confirmed','completed','canceled')",
+            name="ck_reservation_status",
+        ),
+    )
+
+    parking_lot: Mapped["ParkingLot"] = relationship(back_populates="reservations")
+    vehicle: Mapped["Vehicle"] = relationship(back_populates="reservations")
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    amount: Mapped[int] = mapped_column(Integer, nullable=False)  # cents
+    sessions_id: Mapped[int] = mapped_column(
+        ForeignKey("sessions.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    initiator_users_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    method: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    issuer: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    bank: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+    initiator: Mapped["User"] = relationship(
+        back_populates="payments_initiated", foreign_keys=[initiator_users_id]
+    )
+    session: Mapped["Session"] = relationship(
+        back_populates="payments_session",
+        foreign_keys=[sessions_id]
+    )
