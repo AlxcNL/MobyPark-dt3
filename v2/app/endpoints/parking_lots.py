@@ -1,13 +1,13 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, funct
+from sqlalchemy import select, func
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.database import get_db
 from app import models, schemas
 from app.security import check_token ,require_admin
-from app.dependancies import get_current_user, page_params, PageParams
+from app.dependencies import get_current_user, page_params, PageParams
 
 router = APIRouter(prefix="", tags=["parking_lots"])
 bearer_scheme = HTTPBearer(auto_error=True)
@@ -33,25 +33,25 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
 
     return schemas.Message(message="Parking lot created successfully.")
 
-@router.get("/parking-lots", response_model=schemas.Page[schemas.ParkingLot])
-async def list_parking_lots(p: PageParams = Depends(page_params), db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
-    check_token(creds.credentials)
+# @router.get("/parking-lots", response_model=schemas.Page[schemas.ParkingLot])
+# async def list_parking_lots(p: PageParams = Depends(page_params), db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+#     check_token(creds.credentials)
 
-    # total count
-    total = (await db.execute(select(func.count()).select_from(models.ParkingLot))).scalar_one()
+#     # total count
+#     total = (await db.execute(select(func.count()).select_from(models.ParkingLot))).scalar_one()
 
-    # page of rows
-    result = await db.execute(
-        select(models.ParkingLot)
-        .order_by(models.ParkingLot.id)
-        .offset(p.offset)
-        .limit(p.limit)
-    )
-    rows = result.scalars().all()
+#     # page of rows
+#     result = await db.execute(
+#         select(models.ParkingLot)
+#         .order_by(models.ParkingLot.id)
+#         .offset(p.offset)
+#         .limit(p.limit)
+#     )
+#     rows = result.scalars().all()
 
-    # thanks to from_attributes=True you can return ORM rows
-    items = rows
-    return schemas.Page(items=items, total=total, limit=p.limit, offset=p.offset)
+#     # thanks to from_attributes=True you can return ORM rows
+#     items = rows
+#     return schemas.Page(items=items, total=total, limit=p.limit, offset=p.offset)
 
 @router.get("/parking-lots/{lot_id}", response_model=schemas.ParkingLotDetails)
 async def get_parking_lot(lot_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
