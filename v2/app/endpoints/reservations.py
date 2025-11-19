@@ -78,3 +78,55 @@ async def get_reservation(
     
     return reservation
 
+@router.put("/reservations/{reservation_id}", response_model=schemas.Reservation)
+async def update_reservation(
+    reservation_id: int,
+    reservation_update: schemas.ReservationUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    check_token(token.credentials)
+    
+    result = await db.execute(select(models.Reservation).where(models.Reservation.id == reservation_id))
+    reservation = result.scalar_one_or_none()
+    
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    if reservation_update.vehicles_id is not None:
+        reservation.vehicles_id = reservation_update.vehicles_id
+    if reservation_update.parking_lots_id is not None:
+        reservation.parking_lots_id = reservation_update.parking_lots_id
+    if reservation_update.end_time is not None:
+        reservation.end_time = reservation_update.end_time
+    if reservation_update.status is not None:
+        reservation.status = reservation_update.status
+    if reservation_update.cost is not None:
+        reservation.cost = reservation_update.cost
+    
+    db.add(reservation)
+    await db.commit()
+    await db.refresh(reservation)
+    
+    return reservation
+
+@router.delete("/reservations/{reservation_id}", response_model=schemas.Message)
+async def delete_reservation(
+    reservation_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    check_token(token.credentials)
+    require_admin(current_user)
+    
+    result = await db.execute(select(models.Reservation).where(models.Reservation.id == reservation_id))
+    reservation = result.scalar_one_or_none()
+    
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    
+    await db.delete(reservation)
+    await db.commit()
+    
+    return {"message": "Reservation deleted successfully"}
