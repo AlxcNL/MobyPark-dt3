@@ -69,3 +69,36 @@ class ParkingLot:
 
 class Payment:
     pass
+
+class Reservation(Base):
+    __tablename__ = "reservation"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    vehicles_id: Mapped[int] = mapped_column(
+        ForeignKey("vehicles.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    parking_lots_id: Mapped[int] = mapped_column(
+        ForeignKey("parking_lots.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    status: Mapped[str] = mapped_column(String, nullable=False, default="confirmed")
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    cost: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        CheckConstraint(
+            "status in ('confirmed','completed','canceled')",
+            name="ck_reservation_status",
+        ),
+    )
+
+    parking_lot: Mapped["ParkingLot"] = relationship(back_populates="reservations")
+    vehicle: Mapped["Vehicle"] = relationship(back_populates="reservations")
+

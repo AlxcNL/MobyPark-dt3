@@ -7,7 +7,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.database import get_db
 from app import models, schemas
 from app.security import check_token ,require_admin
-from app.dependancies import get_current_user, page_params, PageParams
+from app.dependencies import get_current_user, page_params, PageParams
 
 router = APIRouter(prefix="", tags=["reservations"])
 bearer_scheme = HTTPBearer(auto_error=True)
