@@ -134,3 +134,39 @@ class Vehicle(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+ReservationStatus = Literal["confirmed", "completed", "canceled"]
+
+class ReservationBase(BaseModel):
+    vehicles_id: int
+    parking_lots_id: int
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    status: ReservationStatus = "confirmed"
+    cost: Optional[float] = Field(default=None, ge=0)
+
+
+class ReservationCreate(ReservationBase):
+    pass
+
+
+class ReservationUpdate(BaseModel):
+    vehicles_id: Optional[int] = None
+    parking_lots_id: Optional[int] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    status: Optional[ReservationStatus] = None
+    cost: Optional[conint(ge=0)] = None
+
+
+class Reservation(BaseModel):
+    id: int
+    vehicles_id: int
+    parking_lots_id: int
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    status: ReservationStatus
+    created_at: datetime
+    cost: int
+
+    model_config = ConfigDict(from_attributes=True)
