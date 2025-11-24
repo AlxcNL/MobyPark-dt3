@@ -202,3 +202,6 @@ class Session(BaseModel):
     payment_status: PaymentStatus
 
     model_config = ConfigDict(from_attributes=True)
+
+class MakePayment(BaseModel):
+    pass
