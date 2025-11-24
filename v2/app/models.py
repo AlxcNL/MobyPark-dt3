@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from typing import List, Optional
-from datetime import datetime  # <-- add this
+from datetime import datetime 
 
 from sqlalchemy import (
     String,
@@ -159,7 +159,6 @@ class Session(Base):
         passive_deletes=True,
         foreign_keys="Payment.sessions_id",
     )
-
 
 class Reservation(Base):
     __tablename__ = "reservation"

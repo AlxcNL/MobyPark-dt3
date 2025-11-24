@@ -158,7 +158,6 @@ class ReservationUpdate(BaseModel):
     status: Optional[ReservationStatus] = None
     cost: Optional[conint(ge=0)] = None
 
-
 class Reservation(BaseModel):
     id: int
     vehicles_id: int
@@ -168,5 +167,38 @@ class Reservation(BaseModel):
     status: ReservationStatus
     created_at: datetime
     cost: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+PaymentStatus = Literal["pending", "completed"]
+
+class SessionBase(BaseModel):
+    parking_lots_id: int
+    vehicles_id: int
+    start_date: datetime
+    stop_date: Optional[datetime] = None
+    duration_minutes: Optional[int] = Field(default=0, ge=0)
+    cost: Optional[int] = Field(default=0, ge=0)
+    payment_status: PaymentStatus = "pending"
+
+class SessionCreate(BaseModel):
+    parking_lots_id: int
+    vehicles_id: int
+
+class SessionUpdate(BaseModel):
+    stop_date: Optional[datetime] = None
+    duration_minutes: Optional[int] = Field(default=None, ge=0)
+    cost: Optional[int] = Field(default=None, ge=0)
+    payment_status: Optional[PaymentStatus] = None
+
+class Session(BaseModel):
+    id: int
+    parking_lots_id: int
+    vehicles_id: int
+    start_date: datetime
+    stop_date: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    cost: int
+    payment_status: PaymentStatus
 
     model_config = ConfigDict(from_attributes=True)
