@@ -57,3 +57,68 @@ async def create_payment(
     await db.refresh(new_payment)
     
     return {"message": f"Payment created with ID {new_payment.id}"}
+
+#update completed_at payment to now by payment_id
+@router.put("/payments/{pid}", response_model=schemas.Message)
+async def complete_payment(
+    pid: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    check_token(token.credentials)
+
+    result = await db.execute(
+        select(models.Payment).where(models.Payment.id == pid)
+    )
+    payment = result.scalars().first()
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+
+    if payment.initiator_users_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to complete this payment")
+    if payment.completed_at is not None:
+        raise HTTPException(status_code=400, detail="Payment already completed")
+    payment.completed_at = datetime.now(timezone.utc)
+    db.add(payment)
+    await db.commit()
+    await db.refresh(payment)
+    return {"message": f"Payment with ID {payment.id} completed"}
+
+#list payments of current user
+@router.get("/payments", response_model=List[schemas.Payment])
+async def list_payments(
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    params: PageParams = Depends(page_params),
+):
+    check_token(token.credentials)
+
+    result = await db.execute(
+        select(models.Payment)
+        .where(models.Payment.initiator_users_id == current_user.id)
+        .offset(params.offset)
+        .limit(params.limit)
+    )
+    payments = result.scalars().all()
+    return payments
+
+# get payment by user id
+@router.get("/payments/{uid}", response_model=schemas.Payment)
+async def get_payment_by_user_id(
+    uid: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    check_token(token.credentials)
+    require_admin(current_user)
+
+    result = await db.execute(
+        select(models.Payment).where(models.Payment.initiator_users_id == uid)
+    )
+    payment = result.scalars().first()
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    return payment
