@@ -1,4 +1,3 @@
-# scripts/import_users.py
 import json
 import sqlite3
 
