@@ -57,8 +57,13 @@ def run(conn: sqlite3.Connection):
         )
         return cur.lastrowid
 
-    inserted = skipped = created_vehicles = 0
+    sql = """
+        INSERT OR REPLACE INTO sessions
+            (id, parking_lots_id, vehicles_id, start_date, stop_date, duration_minutes, cost, payment_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """
 
+    inserted = skipped = created_vehicles = 0
     for s in sessions:
         sid = int(s["id"])
         lot_id = int(s["parking_lot_id"]) if s.get("parking_lot_id") else None
@@ -79,3 +84,20 @@ def run(conn: sqlite3.Connection):
             skipped += 1
             print(f"[sessions] skip id={sid} (vehicle not found for plate={plate})")
             continue
+
+        paystat = "completed" if str(s.get("payment_status", "")).lower() == "paid" else "pending"
+
+        cur.execute(sql, (
+            sid,
+            lot_id,
+            veh_id,
+            s.get("started"),                    # store as given
+            s.get("stopped"),
+            int(s.get("duration_minutes") or 0),
+            _cents(s.get("cost")),               # euros -> cents
+            paystat,
+        ))
+        inserted += 1
+
+    conn.commit()
+    print(f"[sessions] imported={inserted} skipped={skipped} vehicles_created={created_vehicles} total={len(sessions)}")
