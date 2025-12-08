@@ -202,3 +202,41 @@ class Session(BaseModel):
     payment_status: PaymentStatus
 
     model_config = ConfigDict(from_attributes=True)
+
+# ---------------------------
+# Payments
+# ---------------------------
+class PaymentBase(BaseModel):
+    sessions_id: int
+    method: Optional[str] = None
+    issuer: Optional[str] = None
+    bank: Optional[str] = None
+
+
+class PaymentCreate(PaymentBase):
+    pass
+
+
+class PaymentUpdate(BaseModel):
+    pass
+
+
+class Payment(BaseModel):
+    id: int
+    amount: int
+    initiator_users_id: int
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+    hash: Optional[str] = None
+    method: Optional[str] = None
+    issuer: Optional[str] = None
+    bank: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+    
+class BillingSummary(BaseModel):
+    amount: float
+    payed: float
+    balance: float
+    sessions: int
+    average: float
