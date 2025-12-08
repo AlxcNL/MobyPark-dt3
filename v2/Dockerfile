@@ -1,4 +1,13 @@
 FROM python:3.11-slim
+RUN apt-get update && apt-get install -y \
+    zsh \
+    git \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+ENV SHELL=/bin/zsh
+SHELL ["/bin/zsh", "-c"]
 
 WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
