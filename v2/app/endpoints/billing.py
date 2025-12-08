@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app import models, schemas
-from app.dependancies import get_current_user, check_token, calculate_price, tr_hash, sum_paid_eur
+from app.dependencies import get_current_user, check_token, calculate_price, tr_hash, sum_paid_eur
 from app.security import require_admin
 
 router = APIRouter(prefix="", tags=["billing"])
