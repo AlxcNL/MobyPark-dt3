@@ -18,22 +18,39 @@ bearer_scheme = HTTPBearer(auto_error=True)
 @router.post("/sessions/start", response_model=schemas.Message)
 async def create_session(
     session: schemas.SessionCreate,
+    lid: int,
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
 ):
     check_token(token.credentials)
 
+    # Validate parking lot exists
+    parking_lot_result = await db.execute(
+        select(models.ParkingLot).where(models.ParkingLot.id == lid)
+    )
+    parking_lot = parking_lot_result.scalars().first()
+    if not parking_lot:
+        raise HTTPException(status_code=404, detail="Parking lot not found")
+
+    # Validate vehicle exists
+    vehicle_result = await db.execute(
+        select(models.Vehicle).where(models.Vehicle.id == session.vehicles_id)
+    )
+    vehicle = vehicle_result.scalars().first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+
     new_session = models.Session(
         parking_lots_id=session.parking_lots_id,
         vehicles_id=session.vehicles_id,
         start_date=datetime.now(timezone.utc)
     )
-    
+
     db.add(new_session)
     await db.commit()
     await db.refresh(new_session)
-    
+
     return {"message": f"Session started with ID {new_session.id}"}
 
 #stop a session

@@ -3,15 +3,7 @@ import requests
 BASE_URL = "http://localhost:8000"
 
 # happy flow
-def test_get_all_sessions(headers: dict) -> None:
-    response = requests.get(f"{BASE_URL}/parking-lots/1/sessions", headers=headers)
-    assert response.status_code == 200
-    
-def test__get_parking_session(headers: dict) -> None:
-    response = requests.get(f"{BASE_URL}/parking-lots/1/sessions/1", headers=headers)
-    assert response.status_code == 200
-    
-def test__start_parking_session(headers: dict) -> None:
+def test_01_start_parking_session(headers: dict) -> None:
     payload = {
         "name": "Central Park Garage",
         "location": "Downtown",
@@ -41,7 +33,15 @@ def test__start_parking_session(headers: dict) -> None:
     response = requests.post(f"{BASE_URL}/parking-lots/1/sessions/start", headers=headers, json=payload)
     assert response.status_code == 200
 
-def test_delete_session(headers:dict) -> None:
+def test_02_get_all_sessions(headers: dict) -> None:
+    response = requests.get(f"{BASE_URL}/parking-lots/1/sessions", headers=headers)
+    assert response.status_code == 200
+
+def test_03_get_parking_session(headers: dict) -> None:
+    response = requests.get(f"{BASE_URL}/parking-lots/1/sessions/1", headers=headers)
+    assert response.status_code == 200
+
+def test_04_delete_session(headers:dict) -> None:
     response = requests.delete(f"{BASE_URL}/parking-lots/1/sessions/1", headers=headers)
     assert response.status_code == 200
     
