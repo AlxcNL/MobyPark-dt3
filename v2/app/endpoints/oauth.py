@@ -27,7 +27,8 @@ async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_d
         password_hash=hash_password(payload.password),
         name=payload.name,
         phone=payload.phone,
-        birth_year=payload.birth_year
+        birth_year=payload.birth_year,
+        role=payload.role
     )
     db.add(new_user)
     await db.commit()

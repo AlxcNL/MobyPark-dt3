@@ -1,10 +1,22 @@
 from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict, conint
-from typing import Optional, Literal
+from typing import Optional, Literal, Generic, TypeVar, List
 from datetime import datetime
+
+T = TypeVar('T')
+
+class Page(BaseModel, Generic[T]):
+    items: List[T]
+    total: int
+    limit: int
+    offset: int
 
 class Message(BaseModel):
     message: str
+
+class MessageWithId(BaseModel):
+    message: str
+    id: int
 
 
 class LoginRequest(BaseModel):
@@ -104,6 +116,8 @@ class ParkingLotDetails(BaseModel):
     longitude: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class VehicleBase(BaseModel):
     license_plate: str
     make: Optional[str] = None
     model: Optional[str] = None

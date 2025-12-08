@@ -1,5 +1,5 @@
 import unittest
-from v2.app.dependencies import calculate_price
+from app.dependencies import calculate_price
 from datetime import datetime, timedelta
 
 class MockParkingLot:

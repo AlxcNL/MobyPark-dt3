@@ -190,3 +190,101 @@ code .
 </li>
 
 </ol>
+
+## Running Tests
+
+The project includes both unit tests and integration tests. Tests should be run inside the Docker container to ensure all dependencies are available.
+
+### Start the Application
+
+First, make sure the Docker container is running:
+
+```bash
+cd v2
+docker compose up -d
+```
+
+### Run Tests in Docker
+
+You have several options for running tests:
+
+**Option 1: Using docker-compose (from v2 directory)**
+
+```bash
+# Run all tests
+docker compose exec api pytest tests/ -v
+
+# Run only unit tests
+docker compose exec api pytest tests/unit/ -v
+
+# Run only integration tests
+docker compose exec api pytest tests/integration/ -v
+```
+
+**Option 2: Using docker exec (from project root)**
+
+```bash
+# Run all tests
+docker exec v2-api-1 pytest tests/ -v
+
+# Run only unit tests
+docker exec v2-api-1 pytest tests/unit/ -v
+
+# Run only integration tests
+docker exec v2-api-1 pytest tests/integration/ -v
+```
+
+### Additional Test Options
+
+```bash
+# Run tests with more detailed output
+docker compose exec api pytest tests/ -v -s
+
+# Run tests and stop at first failure
+docker compose exec api pytest tests/ -x
+
+# Run a specific test file
+docker compose exec api pytest tests/unit/test_calculations.py -v
+
+# Run tests without verbose output
+docker compose exec api pytest tests/
+```
+
+### Interactive Shell in Docker
+
+If you need to run multiple commands or explore the container:
+
+```bash
+# Enter the container shell
+docker compose exec api /bin/zsh
+
+# Now you're inside the container, run tests directly
+pytest tests/unit/ -v
+pytest tests/integration/ -v
+
+# Exit the container
+exit
+```
+
+### Test Structure
+
+- `tests/unit/` - Unit tests (no external dependencies)
+  - `test_calculations.py` - Price calculation tests
+  - `test_hashing.py` - Hashing function tests
+
+- `tests/integration/` - Integration tests (requires running API)
+  - `test_auth.py` - Authentication endpoint tests
+  - `test_vehicles.py` - Vehicle endpoint tests
+  - `test_parking_lots.py` - Parking lot endpoint tests
+  - `test_parking_sessions.py` - Parking session endpoint tests
+  - `test_reservations.py` - Reservation endpoint tests
+  - `test_payments.py` - Payment endpoint tests
+  - `test_profile.py` - Profile endpoint tests
+
+### Stop the Application
+
+When you're done testing:
+
+```bash
+docker-compose down
+```
