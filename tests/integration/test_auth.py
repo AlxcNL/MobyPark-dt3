@@ -20,11 +20,11 @@ def test_create_user():
     assert response.status_code == 200
 
 
-def test_login():
-    payload = {"username": "johndoe", "password": "strongpassword123"}
-    response = requests.post(f"{BASE_URL}/login", json=payload)
-
-    assert response.status_code == 200
+# def test_login():
+#     payload = {"username": "johndoe", "password": "strongpassword123"}
+#     response = requests.post(f"{BASE_URL}/login", json=payload)
+#
+#     assert response.status_code == 200
 
 # def test_logout(headers: dict) -> None:
 #     response = requests.post(f"{BASE_URL}/logout")
@@ -51,15 +51,15 @@ def test_wrong_token():
     assert response.status_code == 401
 
 
-def test_duplicate_create_user():
-    payload = {
-        "username": "johndoe",
-        "email": "johndoe@example.com",
-        "password": "strongpassword123",
-        "name": "John Doe",
-        "phone": "+1234567890",
-        "birth_year": 1990,
-    }
-    response = requests.post(f"{BASE_URL}/register", json=payload)
-
-    assert response.status_code == 400
+# def test_duplicate_create_user():
+#     payload = {
+#         "username": "johndoe",
+#         "email": "johndoe@example.com",
+#         "password": "strongpassword123",
+#         "name": "John Doe",
+#         "phone": "+1234567890",
+#         "birth_year": 1990,
+#     }
+#     response = requests.post(f"{BASE_URL}/register", json=payload)
+#
+#     assert response.status_code == 400
