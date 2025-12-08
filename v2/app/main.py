@@ -1,7 +1,5 @@
 from fastapi import FastAPI
-from app.endpoints import oauth, vehicles, parking_lots, reservations, sessions, payments
-from v2.app.endpoints import billing
-
+from app.endpoints import oauth, vehicles, parking_lots, reservations, sessions, payments, billing
 app = FastAPI(title="MobyPark API v2")
 app.include_router(oauth.router)
 app.include_router(vehicles.router)
