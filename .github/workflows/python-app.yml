@@ -37,27 +37,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f v2/requirements.txt ]; then pip install -r v2/requirements.txt; fi
-          pip install pytest pytest-cov
-
-      - name: Run unit tests
-        run: |
-          pytest -v --maxfail=1 --disable-warnings --cov=v2 --cov-report=term-missing tests/unit
-
-  integration-tests:
-    needs: testing
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -70,6 +49,10 @@ jobs:
       - name: Wait for API to be ready
         run: |
           timeout 60 bash -c 'until curl -f http://localhost:8000/docs > /dev/null 2>&1; do sleep 2; done' || echo "API not ready, continuing anyway"
+
+      - name: Run unit tests
+        run: |
+          docker exec v2-api-1 pytest tests/unit/ -v --maxfail=1 --disable-warnings
 
       - name: Run integration tests
         run: |
@@ -87,7 +70,7 @@ jobs:
           docker compose down
 
   build-and-push:
-    needs: [integration-tests]
+    needs: testing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
