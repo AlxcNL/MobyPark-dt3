@@ -40,6 +40,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Create .env file
+        run: |
+          cd v2
+          cat > .env << EOF
+          # Database configuration
+          DATABASE_URL="sqlite+aiosqlite:///./data/mobypark.db"
+          # Bearer token secret key
+          SECRET_KEY="test-secret-key"
+          DEFAULT_ADMIN_PASSWORD="test-admin-password"
+          EOF
+
       - name: Start Docker services
         run: |
           cd v2
@@ -63,11 +74,12 @@ jobs:
         run: |
           docker logs v2-api-1
 
-      - name: Stop Docker services
+      - name: Stop Docker services and cleanup
         if: always()
         run: |
           cd v2
-          docker compose down
+          docker compose down -v
+          rm -f .env
 
   build-and-push:
     needs: testing
