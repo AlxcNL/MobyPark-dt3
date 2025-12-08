@@ -15,7 +15,7 @@ router = APIRouter(prefix="/parking-lots/{lid}", tags=["sessions"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 #start a session
-@router.post("/sessions/start", response_model=schemas.Message)
+@router.post("/sessions/start", response_model=schemas.MessageWithId)
 async def create_session(
     session: schemas.SessionCreate,
     lid: int,
@@ -51,7 +51,7 @@ async def create_session(
     await db.commit()
     await db.refresh(new_session)
 
-    return {"message": f"Session started with ID {new_session.id}"}
+    return {"message": f"Session started with ID {new_session.id}", "id": new_session.id}
 
 #stop a session
 @router.post("/sessions/{session_id}/stop", response_model=schemas.Message)
