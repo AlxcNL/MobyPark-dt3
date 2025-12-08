@@ -234,3 +234,9 @@ class Payment(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
     
+class BillingSummary(BaseModel):
+    amount: float
+    payed: float
+    balance: float
+    sessions: int
+    average: float
