@@ -25,36 +25,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8
           if [ -f v2/requirements.txt ]; then pip install -r v2/requirements.txt; fi
-
       - name: Lint with flake8
         run: |
           flake8 v2 --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 v2 --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-  unit-tests:
+  testing:
     needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f v2/requirements.txt ]; then pip install -r v2/requirements.txt; fi
-
-      - name: Run unit tests
-        run: |
-          PYTHONPATH=$PYTHONPATH:${{ github.workspace }} pytest tests/unit/ -v --maxfail=1 --disable-warnings
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-
-  integration-tests:
-    needs: unit-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,35 +48,32 @@ jobs:
           SECRET_KEY="test-secret-key"
           DEFAULT_ADMIN_PASSWORD="test-admin-password"
           EOF
-
       - name: Start Docker services
         run: |
           cd v2
           docker compose up -d
           sleep 10
-
       - name: Wait for API to be ready
         run: |
           timeout 60 bash -c 'until curl -f http://localhost:8000/docs > /dev/null 2>&1; do sleep 2; done' || echo "API not ready, continuing anyway"
-
+      - name: Run unit tests
+        run: |
+          docker exec v2-api-1 pytest tests/unit/ -v --maxfail=1 --disable-warnings
       - name: Run integration tests
         run: |
           docker exec v2-api-1 pytest tests/integration/ -v --maxfail=5
-
       - name: Show Docker logs on failure
         if: failure()
         run: |
           docker logs v2-api-1
-
       - name: Stop Docker services and cleanup
         if: always()
         run: |
           cd v2
           docker compose down -v
           rm -f .env
-
   build-and-push:
-    needs: integration-tests
+    needs: testing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
