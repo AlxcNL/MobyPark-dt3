@@ -1,0 +1,20 @@
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+
+processors:
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  index: "mobypark-api-%{+yyyy.MM.dd}"
+
+# Fix for the "setup.template.name" error
+setup.template:
+  name: "mobypark-api"
+  pattern: "mobypark-api-*"
+
+setup.kibana:
+  host: "http://kibana:5601"
