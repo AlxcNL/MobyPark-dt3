@@ -2,6 +2,22 @@ filebeat.autodiscover:
   providers:
     - type: docker
       hints.enabled: true
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.name: "api"
+          config:
+            - type: filestream
+              id: mobypark-filelog
+              paths:
+                - /code/logs/*.log
+              tags: ["mobypark-file"] 
+              processors:
+                - decode_json_fields: 
+                    fields: ["message"]
+                    target: ""
+                    overwrite_keys: true
 
 processors:
   - add_cloud_metadata: ~
@@ -11,7 +27,6 @@ output.elasticsearch:
   hosts: ["http://elasticsearch:9200"]
   index: "mobypark-api-%{+yyyy.MM.dd}"
 
-# Fix for the "setup.template.name" error
 setup.template:
   name: "mobypark-api"
   pattern: "mobypark-api-*"
