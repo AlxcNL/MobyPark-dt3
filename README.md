@@ -288,3 +288,99 @@ When you're done testing:
 ```bash
 docker-compose down
 ```
+
+## Logging and Monitoring
+
+The application uses the ELK (Elasticsearch, Logstash, Kibana) stack for centralized logging and monitoring.
+
+### ELK Stack Components
+
+- **Elasticsearch** - Stores and indexes log data
+- **Kibana** - Web interface for viewing and analyzing logs
+- **Filebeat** - Collects logs from the API container and sends them to Elasticsearch
+
+### Starting the ELK Stack
+
+The ELK stack starts automatically when you run:
+
+```bash
+cd v2
+docker compose up -d
+```
+
+This will start:
+- API container (port 8000)
+- Elasticsearch (port 9200)
+- Kibana (port 5601)
+- Filebeat (log collector)
+
+### Accessing Kibana
+
+Once the stack is running, access Kibana at:
+
+```
+http://localhost:5601
+```
+
+**First-time setup:**
+1. Navigate to **Management** > **Stack Management** > **Index Patterns**
+2. Create a new index pattern: `mobypark-api-*`
+3. Select `@timestamp` as the time field
+4. Go to **Discover** to view your logs
+
+### Log Levels
+
+The application is configured with `INFO` level logging. Available log levels (in order of severity):
+
+- `logging.debug()` - ❌ Not logged (below INFO level)
+- `logging.info()` - ✅ Normal operations (logins, API calls, etc.)
+- `logging.warning()` - ✅ Unusual but non-breaking events
+- `logging.error()` - ✅ Errors requiring attention
+- `logging.critical()` - ✅ Critical system failures
+
+### Log Format
+
+Logs are stored in **ECS (Elastic Common Schema)** JSON format for optimal Elasticsearch integration.
+
+### Log Storage
+
+Logs are stored in a Docker named volume:
+- Container path: `/code/logs/mobypark_api.log`
+- Volume name: `mobypark_logs`
+- Log rotation: 10MB max file size, 5 backup files
+
+### Viewing Logs
+
+**Option 1: Via Kibana Dashboard (Recommended)**
+```
+http://localhost:5601
+```
+
+**Option 2: Docker Logs (Console Output)**
+```bash
+docker compose logs -f api
+```
+
+**Option 3: Access Log Files in Container**
+```bash
+docker exec -it v2-api-1 cat /code/logs/mobypark_api.log
+```
+
+**Option 4: Check Filebeat Status**
+```bash
+docker compose logs -f filebeat
+```
+
+### Troubleshooting
+
+**Logs not appearing in Kibana:**
+1. Check if Elasticsearch is running: `curl http://localhost:9200`
+2. Verify Filebeat is collecting logs: `docker compose logs filebeat`
+3. Ensure index pattern exists in Kibana
+4. Check API container is writing logs: `docker exec -it v2-api-1 ls -la /code/logs`
+
+**Reset the ELK Stack:**
+```bash
+docker compose down -v  # Removes volumes
+docker compose up -d    # Fresh start
+```

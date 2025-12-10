@@ -19,13 +19,10 @@ def setup_logging():
     console_handler.setFormatter(StdlibFormatter())
     logger.addHandler(console_handler)
     file_handler = RotatingFileHandler(
-        LOG_FILE, 
+        LOG_FILE,
         maxBytes=10485760, # 10MB
-        backupCount=5, 
+        backupCount=5,
         encoding='utf-8'
     )
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    ))
-    logger.addHandler(file_handler)    
-    logging.info(f"Logging ingesteld. Lokale logfile: {LOG_FILE}")
+    file_handler.setFormatter(StdlibFormatter())
+    logger.addHandler(file_handler)
