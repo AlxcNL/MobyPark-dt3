@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,6 +33,7 @@ async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_d
     )
     db.add(new_user)
     await db.commit()
+    logging.info(f"User registered: {payload.username}")
     return schemas.Message(message="User registered successfully.")
 
 @router.post("/login", response_model=schemas.TokenResponse)
