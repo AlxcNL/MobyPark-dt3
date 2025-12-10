@@ -223,3 +223,9 @@ class Payment(Base):
         back_populates="payments_session",
         foreign_keys=[sessions_id]
     )
+    
+class Hotel(Base):
+    __tablename__ = "hotels"
+    
+    hotel_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
