@@ -78,6 +78,7 @@ class ParkingLotBase(BaseModel):
     daytariff: float
     latitude: float
     longitude: float
+    hotel_id: Optional[int]
 
 
 class CreateParkingLot(ParkingLotBase):
@@ -114,7 +115,7 @@ class ParkingLotDetails(BaseModel):
     created_at: datetime
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-
+    hotel_id: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
 
 class VehicleBase(BaseModel):

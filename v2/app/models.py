@@ -123,6 +123,8 @@ class ParkingLot(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    hotel_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    
 
 class Session(Base):
     __tablename__ = "sessions"

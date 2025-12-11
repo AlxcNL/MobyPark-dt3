@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy import create_engine
-from app.endpoints import oauth, vehicles, parking_lots, reservations, sessions, payments, billing, hotels
+from app.endpoints import oauth, vehicles, parking_lots, reservations, sessions, payments, billing
 from app.models import Base
 from app.database import engine
 
@@ -12,7 +12,6 @@ app.include_router(reservations.router)
 app.include_router(sessions.router)
 app.include_router(payments.router)
 app.include_router(billing.router)
-app.include_router(hotels.router)
 
 @app.get("/")
 async def root():

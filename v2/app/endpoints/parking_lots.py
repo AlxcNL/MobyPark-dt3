@@ -15,7 +15,12 @@ bearer_scheme = HTTPBearer(auto_error=True)
 @router.post("/parking-lots", response_model=schemas.Message)
 async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme), current_user: models.User = Depends(get_current_user)):
     require_admin(current_user)
-
+    
+    if lot.hotel_id:
+        result = await db.execute(select(models.Hotel).where(models.Hotel.hotel_id == lot.hotel_id))
+        if not result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Hotel not found")
+        
     new_lot = models.ParkingLot(
         name=lot.name,
         location=lot.location,
@@ -25,7 +30,8 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
         tariff=lot.tariff,
         daytariff=lot.daytariff,
         latitude=lot.latitude,
-        longitude=lot.longitude
+        longitude=lot.longitude,
+        hotel_id = lot.hotel_id
     )
     db.add(new_lot)
     await db.commit()
@@ -61,9 +67,9 @@ async def get_parking_lot(lot_id: int, db: AsyncSession = Depends(get_db), curre
         raise HTTPException(status_code=404, detail="Parking lot not found")
     return lot
 
-@router.get("/parking-lots/{lot_id}", response_model=schemas.ParkingLotDetails)
-async def get_parking_lot(lot_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    result = await db.execute(select(models.ParkingLot).where(models.ParkingLot.id == lot_id))
+@router.get("/parking-lots/hotels/{hotel_id}", response_model=schemas.ParkingLotDetails)
+async def get_parking_lot(hotel_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    result = await db.execute(select(models.ParkingLot).where(models.ParkingLot.hotel_id == hotel_id))
     lot = result.scalar_one_or_none()
     if not lot:
         raise HTTPException(status_code=404, detail="Parking lot not found")
