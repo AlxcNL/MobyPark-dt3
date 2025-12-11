@@ -49,6 +49,13 @@ class User(Base):
         passive_deletes=True,
         foreign_keys="Payment.initiator_users_id",
     )
+    
+    hotel_id: Mapped[int] = mapped_column(
+        ForeignKey("hotels.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=True,
+        index=True
+    )
+    hotel_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
