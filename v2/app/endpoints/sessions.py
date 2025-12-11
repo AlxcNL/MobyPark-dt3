@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,6 +32,7 @@ async def create_session(
     )
     parking_lot = parking_lot_result.scalars().first()
     if not parking_lot:
+        logging.error(f"Parking lot with ID {lid} not found")
         raise HTTPException(status_code=404, detail="Parking lot not found")
 
     # Validate vehicle exists
@@ -39,6 +41,7 @@ async def create_session(
     )
     vehicle = vehicle_result.scalars().first()
     if not vehicle:
+        logging.error(f"Vehicle with ID {session.vehicles_id} not found")
         raise HTTPException(status_code=404, detail="Vehicle not found")
 
     new_session = models.Session(
@@ -50,7 +53,7 @@ async def create_session(
     db.add(new_session)
     await db.commit()
     await db.refresh(new_session)
-
+    logging.info(f"Session started with ID {new_session.id}")
     return {"message": f"Session started with ID {new_session.id}", "id": new_session.id}
 
 #stop a session
@@ -74,6 +77,7 @@ async def stop_session(
     )
     session = result.scalars().first()
     if not session:
+        logging.error(f"No active session found with ID {session_id}")
         raise HTTPException(status_code=404, detail="No active session found")
 
     # fetch parking lot for tariffs
@@ -82,6 +86,7 @@ async def stop_session(
     )
     parking_lot = lot_res.scalars().first()
     if not parking_lot:
+        logging.error(f"Parking lot with ID {lid} not found")
         raise HTTPException(status_code=404, detail="Parking lot not found")
 
     session.stop_date = datetime.now(timezone.utc)
@@ -96,6 +101,7 @@ async def stop_session(
 
     await db.commit()
     await db.refresh(session)
+    logging.info(f"Session {session_id} stopped")
     return {"message": f"Session {session_id} stopped"}
 
 @router.get("/sessions", response_model=List[schemas.Session])
@@ -160,8 +166,9 @@ async def get_session(
     session = result.scalars().first()
     
     if not session:
+        logging.error(f"Session with ID {session_id} not found")
         raise HTTPException(status_code=404, detail="Session not found")
-    
+    logging.info(f"Session {session_id} retrieved")
     return session
 
 #delete a session (only admin)
@@ -185,9 +192,10 @@ async def delete_session(
     session = result.scalars().first()
     
     if not session:
+        logging.error(f"Session with ID {session_id} not found")
         raise HTTPException(status_code=404, detail="Session not found")
     
     await db.delete(session)
     await db.commit()
-    
+    logging.info(f"Session {session_id} deleted")
     return {"message": f"Session {session_id} deleted"}
