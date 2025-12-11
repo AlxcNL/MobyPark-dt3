@@ -20,6 +20,7 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
     if lot.hotel_id:
         result = await db.execute(select(models.Hotel).where(models.Hotel.hotel_id == lot.hotel_id))
         if not result.scalar_one_or_none():
+            logging.error("Hotel not found")
             raise HTTPException(status_code=404, detail="Hotel not found")
         
     new_lot = models.ParkingLot(
@@ -38,6 +39,7 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
     await db.commit()
     await db.refresh(new_lot)
 
+    logging.info("parkinglot created")
     return schemas.Message(message="Parking lot created successfully.")
 
 @router.get("/parking-lots", response_model=schemas.Page[schemas.ParkingLot])
@@ -73,6 +75,7 @@ async def get_parking_lot(hotel_id: int, db: AsyncSession = Depends(get_db), cur
     result = await db.execute(select(models.ParkingLot).where(models.ParkingLot.hotel_id == hotel_id))
     lot = result.scalar_one_or_none()
     if not lot:
+        logging.error("Parking lot not found")
         raise HTTPException(status_code=404, detail="Parking lot not found")
     return lot
 
