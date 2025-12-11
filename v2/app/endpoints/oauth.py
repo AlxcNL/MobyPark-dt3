@@ -97,3 +97,29 @@ async def update_user(
         return schemas.Message(message="Password updated. Please log in again.")
 
     return schemas.Message(message="Profile updated successfully.")
+
+@router.post("/register/hotel", response_model=schemas.Message)
+async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(models.User).where(models.User.email == payload.email))
+    user = result.scalar_one_or_none()
+    if user:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    new_hotel = models.Hotel(
+        name=payload.name
+    )
+    db.add(new_hotel)
+    await db.commit()
+    await db.refresh(new_hotel)
+    new_user = models.User(
+        username=payload.username,
+        email=payload.email,
+        password_hash=hash_password(payload.password),
+        name=payload.name,
+        phone=payload.phone,
+        birth_year=payload.birth_year,
+        role=payload.role,
+        hotel_id=new_hotel.hotel_id
+    )
+    db.add(new_user)
+    await db.commit()
+    return schemas.Message(message="User registered successfully.")
