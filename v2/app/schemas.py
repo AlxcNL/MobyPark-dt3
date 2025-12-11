@@ -256,5 +256,4 @@ class BillingSummary(BaseModel):
     average: float
     
 class Hotel(BaseModel):
-    hotel_id: int
     name: str
