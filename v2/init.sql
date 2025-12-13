@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name TEXT NOT NULL,
     role TEXT DEFAULT 'USER' CHECK(role IN ('USER', 'ADMIN')),
     is_active BOOLEAN DEFAULT TRUE,
+    hotel_id INTEGER NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS parking_lots (
     hourly_rate REAL NOT NULL,
     daily_rate REAL NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
+    hotel_id INTEGER NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -97,6 +99,12 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (session_id) REFERENCES parking_sessions(session_id) ON DELETE SET NULL,
     FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE SET NULL
+);
+
+CREATE TABLE hotels (
+	hotel_id INTEGER NOT NULL, 
+	name VARCHAR NOT NULL, 
+	PRIMARY KEY (hotel_id)
 );
 
 -- Insert sample data
