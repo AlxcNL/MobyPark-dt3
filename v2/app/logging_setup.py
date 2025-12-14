@@ -1,28 +1,23 @@
 import logging
-import sys
-from logging.handlers import RotatingFileHandler
-from ecs_logging import StdlibFormatter
-from pathlib import Path
+import os
+from datetime import date
 
-LOG_DIR = Path("logs")
-LOG_FILE = LOG_DIR / "mobypark_api.log"
+LOG_DIR = "/v2/app/logs"
 
-def setup_logging():
-    LOG_DIR.mkdir(exist_ok=True)
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    
-    if logger.hasHandlers():
-        logger.handlers.clear()
-    
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(StdlibFormatter())
-    logger.addHandler(console_handler)
-    file_handler = RotatingFileHandler(
-        LOG_FILE,
-        maxBytes=10485760, # 10MB
-        backupCount=5,
-        encoding='utf-8'
+def setup_logging(log_level):
+    os.makedirs(LOG_DIR, exist_ok=True)
+
+    today = date.today().isoformat()
+    logfile = f"{LOG_DIR}/mobipark_api_{today}.log"
+
+    logging.basicConfig(
+        level=log_level,
+        format=(
+            "%(asctime)s "
+            "%(levelname)s "
+            "endpoint=%(endpoint)s "
+            "httpcode=%(httpcode)s "
+            "%(message)s"
+        ),
+        filename=logfile
     )
-    file_handler.setFormatter(StdlibFormatter())
-    logger.addHandler(file_handler)

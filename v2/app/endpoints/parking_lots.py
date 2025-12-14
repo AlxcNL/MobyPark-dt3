@@ -13,7 +13,7 @@ from app.dependencies import get_current_user, page_params, PageParams
 router = APIRouter(prefix="", tags=["parking_lots"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
-@router.post("/parking-lots", response_model=schemas.Message)
+@router.post("/parking-lots", response_model=schemas.ParkingLotDetails)
 async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme), current_user: models.User = Depends(get_current_user)):
     require_admin(current_user)
 
@@ -32,7 +32,7 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
     await db.commit()
     await db.refresh(new_lot)
 
-    return schemas.Message(message="Parking lot created successfully.")
+    return new_lot
 
 @router.get("/parking-lots", response_model=schemas.Page[schemas.ParkingLot])
 async def list_parking_lots(p: PageParams = Depends(page_params), db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
@@ -62,7 +62,7 @@ async def get_parking_lot(lot_id: int, db: AsyncSession = Depends(get_db), curre
         raise HTTPException(status_code=404, detail="Parking lot not found")
     return lot
 
-@router.put("/parking-lots/{lot_id}", response_model=schemas.Message)
+@router.put("/parking-lots/{lot_id}", response_model=schemas.UpdateParkingLot)
 async def update_parking_lot(lot_id: int, lot_update: schemas.UpdateParkingLot, db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme), current_user: models.User = Depends(get_current_user)):
     require_admin(current_user)
 
@@ -95,7 +95,7 @@ async def update_parking_lot(lot_id: int, lot_update: schemas.UpdateParkingLot, 
     await db.commit()
     await db.refresh(lot)
 
-    return schemas.Message(message="Parking lot updated successfully.")
+    return lot
 
 @router.delete("/parking-lots/{lot_id}", response_model=schemas.Message)
 async def delete_parking_lot(lot_id: int, db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme), current_user: models.User = Depends(get_current_user)):

@@ -59,7 +59,7 @@ async def logout(creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
 async def get_profile(current_user: models.User = Depends(get_current_user)):
     return current_user
 
-@router.put("/profile", response_model=schemas.Message)
+@router.put("/profile", response_model=schemas.User)
 async def update_user(
     payload: schemas.UserUpdate,
     creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -98,4 +98,4 @@ async def update_user(
         remove_token(token)
         return schemas.Message(message="Password updated. Please log in again.")
 
-    return schemas.Message(message="Profile updated successfully.")
+    return current_user

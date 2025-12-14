@@ -87,8 +87,8 @@ class UpdateParkingLot(BaseModel):
     name: Optional[str] = None
     location: Optional[str] = None
     address: Optional[str] = None
-    capacity: Optional[int] = Field(default=0, ge=0)
-    reserved: Optional[int] = Field(default=0, ge=0)
+    capacity: Optional[int] = Field(default=None, ge=0)
+    reserved: Optional[int] = Field(default=None, ge=0)
     tariff: Optional[float] = None
     daytariff: Optional[float] = None
     latitude: Optional[float] = None
