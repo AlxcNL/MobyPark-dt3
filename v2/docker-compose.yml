@@ -6,21 +6,11 @@ services:
     volumes:
       - ./app:/code/app
       - ./data:/code/data
-      - ../tests:/code/tests
-      - mobypark_logs:/code/logs #Named volume voor logs
+      - ./app/logs:/app/logs
     env_file:
       - .env
     depends_on:
       - elasticsearch
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
-    labels:
-      - "co.elastic.logs/enabled=true"
-      - "co.elastic.logs/json.keys_under_root=true"
-      - "co.elastic.logs/json.add_error_key=true"
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
@@ -49,15 +39,12 @@ services:
     user: root
     volumes:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - mobypark_logs:/code/logs 
+      - ./app/logs:/app/logs:ro
     depends_on:
       - elasticsearch
       - api
-    command: filebeat -e -strict.perms=false
+    command: ["filebeat", "-e", "-strict.perms=false"]
 
 volumes:
   elasticsearch-data:
-    driver: local
-  mobypark_logs:
     driver: local
