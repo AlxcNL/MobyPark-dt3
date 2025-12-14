@@ -62,7 +62,7 @@ class User(BaseModel):
     birth_year: Optional[int] = None
     active: int
     created_at: datetime
-
+    hotel_id: Optional[int]
     model_config = ConfigDict(from_attributes=True)
 
 class VehicleBase(BaseModel):

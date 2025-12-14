@@ -21,7 +21,7 @@ def test__add_parking_lot(headers: dict) -> None:
         "tariff": 2.5,
         "daytariff": 20.0,
         "latitude": 40.785091,
-        "longitude": -73.968285,
+        "longitude": -73.968285
     }
     response = requests.post(f"{BASE_URL}/parking-lots", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}, {response.text}"

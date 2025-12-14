@@ -77,7 +77,6 @@ async def update_user(
     if payload.birth_year is not None:
         current_user.birth_year = payload.birth_year
         changed = True
-
     # optional password change
     new_pw = getattr(payload, "password", None)
     if new_pw:
@@ -101,7 +100,7 @@ async def update_user(
     return schemas.Message(message="Profile updated successfully.")
 
 @router.post("/register/hotel", response_model=schemas.Message)
-async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
+async def register_hotel(payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.User).where(models.User.email == payload.email))
     user = result.scalar_one_or_none()
     if user:
@@ -110,8 +109,10 @@ async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_d
         name=payload.name
     )
     db.add(new_hotel)
+    
     await db.commit()
     await db.refresh(new_hotel)
+    
     new_user = models.User(
         username=payload.username,
         email=payload.email,
@@ -124,4 +125,17 @@ async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_d
     )
     db.add(new_user)
     await db.commit()
+    
+    # Query the newly added user to check if it has been added correctly
+    result = await db.execute(
+        select(models.User).where(
+            (models.User.hotel_id == new_hotel.hotel_id)
+            & (models.User.id == new_user.id)
+        )
+    )
+    new_user = result.scalar_one_or_none()
+    if not new_user:
+        logging.error("Hotel ID does not exist when adding user or user could not be added")
+        raise HTTPException(status_code=404, detail="Something went wrong when adding the hotel")
+    
     return schemas.Message(message="Hotel registered successfully.")
