@@ -124,4 +124,4 @@ async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_d
     )
     db.add(new_user)
     await db.commit()
-    return schemas.Message(message="User registered successfully.")
+    return schemas.Message(message="Hotel registered successfully.")

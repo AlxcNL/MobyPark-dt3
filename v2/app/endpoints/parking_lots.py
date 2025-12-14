@@ -22,6 +22,7 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
         if not result.scalar_one_or_none():
             logging.error("Hotel not found")
             raise HTTPException(status_code=404, detail="Hotel not found")
+        lot.tariff = 0
         
     new_lot = models.ParkingLot(
         name=lot.name,
@@ -39,7 +40,6 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
     await db.commit()
     await db.refresh(new_lot)
 
-    logging.info("parkinglot created")
     return schemas.Message(message="Parking lot created successfully.")
 
 @router.get("/parking-lots", response_model=schemas.Page[schemas.ParkingLot])

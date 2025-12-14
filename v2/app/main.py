@@ -1,11 +1,8 @@
 import logging
 
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from app.endpoints import oauth, vehicles, parking_lots, reservations, sessions, payments, billing
-from app.models import Base
-from app.database import engine
 from app.logging_setup import setup_logging 
+from app.endpoints import oauth, vehicles, parking_lots, reservations, sessions, payments, billing
 
 setup_logging()
 app = FastAPI(title="MobyPark API v2")
