@@ -258,3 +258,8 @@ class BillingSummary(BaseModel):
     
 class Hotel(BaseModel):
     name: str
+    address: str
+    
+class HotelUpdate(BaseModel):
+    name: Optional[str]
+    address: Optional[str]

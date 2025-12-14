@@ -104,8 +104,9 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE TABLE hotels (
 	hotel_id INTEGER NOT NULL, 
 	name VARCHAR NOT NULL, 
+    address TEXT, 
 	PRIMARY KEY (hotel_id)
-);
+)
 
 -- Insert sample data
 -- Default admin user

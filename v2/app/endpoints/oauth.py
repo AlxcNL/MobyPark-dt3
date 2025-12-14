@@ -99,6 +99,35 @@ async def update_user(
 
     return schemas.Message(message="Profile updated successfully.")
 
+@router.put("/profile/hotel", response_model=schemas.Message)
+async def update_hotel(
+    payload: schemas.HotelUpdate,
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    current_hotel_user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    changed = False
+    result = await db.execute(select(models.Hotel).where(models.Hotel.hotel_id == current_hotel_user.hotel_id))
+    current_hotel = result.scalar_one_or_none()
+    
+    if not current_hotel:
+        raise HTTPException(status_code=404, detail="Hotel does not exists")
+    
+    if payload.name is not None:
+        current_hotel.name = payload.name
+        changed = True
+    if payload.address is not None:
+        current_hotel.address = payload.address
+        changed = True
+    
+    if changed:
+        db.add(current_hotel)
+        await db.commit()
+    else:
+        return schemas.Message(message="No changes provided.")
+    
+    return schemas.Message(message="Hotel details have been changed succesfully")
+    
 @router.post("/register/hotel", response_model=schemas.Message)
 async def register_hotel(payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.User).where(models.User.email == payload.email))
