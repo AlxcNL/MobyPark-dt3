@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-USERS_JSON = "./tools/import jsons/data/users.json"
+USERS_JSON = "./tools/import_jsons/data/users.json"
 
 def run(conn: sqlite3.Connection):
     cur = conn.cursor()
