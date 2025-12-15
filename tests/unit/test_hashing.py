@@ -1,5 +1,5 @@
 import unittest
-from v2.app.dependencies import generate_payment_hash, tr_hash
+from app.dependencies import generate_payment_hash, tr_hash
 
 class MockVehicle:
     def __init__(self, license_plate):
@@ -23,7 +23,7 @@ class TestHashing(unittest.TestCase):
 
     def test_hr_hash_white_spaces(self):
         test_vehicle = MockVehicle(license_plate=" AAA-AAA-222 ")
-        self.assertNotEquals(tr_hash(33, test_vehicle.license_plate), "87d87ec44347b39ca7b91d322517857f")
+        self.assertNotEqual(tr_hash(33, test_vehicle.license_plate), "87d87ec44347b39ca7b91d322517857f")
 
     def test_hr_negative_value(self):
         test_vehicle = MockVehicle(license_plate="AAA-AAA-222")

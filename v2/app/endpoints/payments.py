@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +16,7 @@ router = APIRouter(prefix="", tags=["payments"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 #post a payment for a session
-@router.post("/payments", response_model=schemas.Message)
+@router.post("/payments", response_model=schemas.MessageWithId)
 async def create_payment(
     payment: schemas.PaymentCreate,
     db: AsyncSession = Depends(get_db),
@@ -31,7 +32,7 @@ async def create_payment(
     session = result.scalars().first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     #get vehicle info from sessions.id
     result = await db.execute(
         select(models.Vehicle).where(models.Vehicle.id == session.vehicles_id)
@@ -49,14 +50,14 @@ async def create_payment(
         method=payment.method,
         issuer=payment.issuer,
         bank=payment.bank
-    )    
-    
+    )
+
     # Commit new_payment and update session.payment_status to 'completed'
     db.add(new_payment)
     await db.commit()
     await db.refresh(new_payment)
-    
-    return {"message": f"Payment created with ID {new_payment.id}"}
+
+    return {"message": f"Payment created with ID {new_payment.id}", "id": new_payment.id}
 
 #update completed_at payment to now by payment_id
 @router.put("/payments/{pid}", response_model=schemas.Message)

@@ -110,4 +110,9 @@ async def sum_paid_eur(db: AsyncSession, session_id: int, thash: str) -> float:
     return round(cents / 100.0, 2)
 
 def licenceplate_clean(license_plate: str) -> str:
-    pass
+    """Clean license plate by removing spaces, dashes and converting to uppercase."""
+    if not license_plate:
+        return ""
+    # Remove spaces, dashes, and other common separators, convert to uppercase
+    cleaned = re.sub(r'[\s\-]', '', license_plate).upper()
+    return cleaned

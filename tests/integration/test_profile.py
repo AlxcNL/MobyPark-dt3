@@ -28,4 +28,4 @@ def test_updating_profile_validation(headers: dict) -> None:
 
 def test_get_profile_no_auth() -> None:
     response = requests.get(f"{BASE_URL}/profile")
-    assert response.status_code == 403
+    assert response.status_code == 401  # 401 Unauthorized (no auth token)
