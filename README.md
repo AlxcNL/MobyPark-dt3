@@ -1,4 +1,95 @@
-# Software Construction Process & Tools
+## Getting Started
+
+Deze instructies helpen je om de MobyPark applicatie lokaal te draaien.
+
+### Vereisten
+
+- Docker en Docker Compose geïnstalleerd op je systeem
+- Git
+
+### Applicatie Runnen
+
+1. **Clone de repository**
+
+   ```bash
+   git clone https://github.com/bryandevuono/MobyPark-group3.git
+   cd MobyPark-group3
+   ```
+
+2. **Maak een .env bestand aan**
+
+   Navigeer naar de `v2` directory en maak een `.env` bestand aan met de volgende inhoud:
+
+   ```bash
+   cd v2
+   ```
+
+   Maak een `.env` bestand met de volgende configuratie:
+
+   ```env
+   # Database configuration
+   DATABASE_URL="sqlite+aiosqlite:///./data/mobypark.db"
+
+   # Bearer token secret key
+   SECRET_KEY="groep3"
+
+   # Default admin password
+   DEFAULT_ADMIN_PASSWORD="groep3"
+   ```
+
+3. **Maak de database directory aan**
+
+   ```bash
+   mkdir -p data
+   ```
+
+4. **Start de applicatie met Docker Compose**
+
+   ```bash
+   docker compose up -d
+   ```
+
+   Dit start de volgende services:
+   - API (FastAPI applicatie) op poort 8000
+   - Elasticsearch op poort 9200
+   - Kibana op poort 5601
+   - Filebeat (log collector)
+
+5. **Initialiseer de database**
+
+   Voer de database initialisatie script uit in de container:
+
+   ```bash
+   docker exec -it v2-api-1 python tools/init_db.py
+   ```
+
+   Of alternatief, ga in de container en voer het script uit:
+
+   ```bash
+   docker exec -it v2-api-1 /bin/zsh
+   python tools/init_db.py
+   exit
+   ```
+
+6. **Toegang tot de applicatie**
+
+   - API: http://localhost:8000
+   - API Documentatie (Swagger): http://localhost:8000/docs
+   - Kibana (Logs): http://localhost:5601
+
+### Applicatie Stoppen
+
+Om de applicatie te stoppen:
+
+```bash
+docker compose down
+```
+
+Om de applicatie te stoppen en alle data te verwijderen (inclusief database en logs):
+
+```bash
+docker compose down -v
+```
 
 ## Development Setup
 
