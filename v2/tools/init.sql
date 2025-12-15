@@ -103,3 +103,17 @@ CREATE TABLE IF NOT EXISTS payments (
 );
 CREATE INDEX IF NOT EXISTS fk_payments_users1_idx ON payments (initiator_users_id);
 CREATE INDEX IF NOT EXISTS fk_payments_sessions1_idx ON payments (sessions_id);
+
+CREATE TABLE businesses (
+	id INTEGER NOT NULL, 
+	name VARCHAR NOT NULL, 
+    address TEXT, 
+	PRIMARY KEY (hotel_id)
+)
+
+-- Create user and business
+INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotle_id) VALUES
+(3, 'hotel_user', 'test2@mobypark.com', 'password1234', 'Test User', 'USER', NULL);
+
+INSERT OR IGNORE INTO businesses (id, name, address) VALUES
+(1, 'hotel1', 'Naamlaan 156');
