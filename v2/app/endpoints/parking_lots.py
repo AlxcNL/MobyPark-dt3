@@ -23,6 +23,7 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
             logging.error("Business not found")
             raise HTTPException(status_code=404, detail="Business not found")
         lot.tariff = 0
+        lot.daytariff = 0
         
     new_lot = models.ParkingLot(
         name=lot.name,

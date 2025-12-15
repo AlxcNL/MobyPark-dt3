@@ -45,7 +45,7 @@ async def update_business(
     
     return schemas.Message(message="Business details have been changed succesfully")
     
-@router.post("/business", response_model=schemas.Message)
+@router.post("/businesses", response_model=schemas.Message)
 async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.User).where(models.User.email == payload.email))
     user = result.scalar_one_or_none()
@@ -97,5 +97,16 @@ async def get_parking_lot(business_id: int, db: AsyncSession = Depends(get_db), 
         raise HTTPException(status_code=404, detail="Parking lot not found")
     return lot
 
-#TODO: get businesses
+@router.get("/businesses/{business_id}", response_model=schemas.BusinessRead)
+async def get_business(business_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(models.Business).where(models.Business.id == business_id))
+    business = result.scalar_one_or_none()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+    return business
 
+@router.get("/businesses", response_model=list[schemas.BusinessRead])
+async def get_all_businesses(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(models.Business))
+    businesses = result.scalars().all()
+    return businesses

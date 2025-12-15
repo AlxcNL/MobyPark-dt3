@@ -81,11 +81,10 @@ class ParkingLotBase(BaseModel):
     daytariff: float
     latitude: float
     longitude: float
-    business_id: Optional[int]
 
 
 class CreateParkingLot(ParkingLotBase):
-    pass
+    business_id: Optional[int]
 
 class UpdateParkingLot(BaseModel):
     name: Optional[str] = None
@@ -262,6 +261,10 @@ class BillingSummary(BaseModel):
 class Business(BaseModel):
     name: str
     address: str
+
+class BusinessRead(BaseModel):
+    name: Optional[str]
+    address: Optional[str]
     
 class BusinessUpdate(BaseModel):
     name: Optional[str]
