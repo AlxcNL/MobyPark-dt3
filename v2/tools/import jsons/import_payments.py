@@ -3,7 +3,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-PAYMENTS_JSON = "./tools/import jsons/data/payments.json"
+PAYMENTS_JSON = "./tools/import_jsons/data/payments.json"
 
 
 def _cents(value) -> int:
