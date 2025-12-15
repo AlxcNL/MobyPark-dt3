@@ -111,9 +111,5 @@ CREATE TABLE businesses (
 	PRIMARY KEY (hotel_id)
 )
 
--- Create user and business
-INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotle_id) VALUES
-(3, 'hotel_user', 'test2@mobypark.com', 'password1234', 'Test User', 'USER', NULL);
 
-INSERT OR IGNORE INTO businesses (id, name, address) VALUES
-(1, 'hotel1', 'Naamlaan 156');
+
