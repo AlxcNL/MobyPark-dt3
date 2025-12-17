@@ -102,15 +102,15 @@ CREATE TABLE IF NOT EXISTS payments (
 );
 
 CREATE TABLE hotels (
-	hotel_id INTEGER NOT NULL, 
-	name VARCHAR NOT NULL, 
-    address TEXT, 
+	hotel_id INTEGER NOT NULL,
+	name VARCHAR NOT NULL,
+    address TEXT,
 	PRIMARY KEY (hotel_id)
-)
+);
 
 -- Insert sample data
 -- Default admin user
-INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotle_id) VALUES
+INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotel_id) VALUES
 (1, 'admin', 'admin@mobypark.com', 'admin123', 'Administrator', 'ADMIN', NULL),
 (2, 'testuser', 'test@mobypark.com', 'password123', 'Test User', 'USER', NULL);
 
@@ -128,7 +128,7 @@ INSERT OR IGNORE INTO vehicles (user_id, license_plate, vehicle_name, brand, mod
 (2, '45-DEF-6', 'Work Van', 'Ford', 'Transit', 'White');
 
 -- Create user and hotel
-INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotle_id) VALUES
+INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotel_id) VALUES
 (3, 'hotel_user', 'test2@mobypark.com', 'password1234', 'Test User', 'USER', NULL);
 
 INSERT OR IGNORE INTO hotels (hotel_id, name, address) VALUES
