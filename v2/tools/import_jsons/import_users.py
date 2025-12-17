@@ -12,22 +12,20 @@ def run(conn: sqlite3.Connection):
 
     sql = """
         INSERT OR REPLACE INTO users
-            (id, username, password_hash, name, email, phone, role, created_at, birth_year, active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (user_id, username, email, password_hash, full_name, role, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     for u in users:
         cur.execute(sql, (
             int(u["id"]),
             u["username"],
+            u["email"],
             u["password"],
             u["name"],
-            u["email"],
-            u["phone"],
-            u["role"].lower(),
-            u["created_at"],
-            u["birth_year"],
-            1 if u["active"] else 0,
+            u["role"].upper(),
+            1 if u.get("active", True) else 0,
+            u.get("created_at"),
         ))
         conn.commit()
 

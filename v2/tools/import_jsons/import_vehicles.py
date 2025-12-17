@@ -1,11 +1,7 @@
 import json
-import re
 import sqlite3
 
 VEHICLES_JSON = "./tools/import_jsons/data/vehicles.json"
-
-def _lpclean(plate: str) -> str:
-    return re.sub(r"[^A-Za-z0-9]", "", plate).upper()
 
 def run(conn: sqlite3.Connection):
     cur = conn.cursor()
@@ -16,12 +12,12 @@ def run(conn: sqlite3.Connection):
 
     # quick helper to verify user exists
     def _user_exists(user_id: int) -> bool:
-        cur.execute("SELECT 1 FROM users WHERE id = ? LIMIT 1", (user_id,))
+        cur.execute("SELECT 1 FROM users WHERE user_id = ? LIMIT 1", (user_id,))
         return cur.fetchone() is not None
 
     sql = """
         INSERT OR REPLACE INTO vehicles
-            (id, users_id, license_plate_clean, license_plate, make, model, color, year, created_at)
+            (vehicle_id, user_id, license_plate, vehicle_name, brand, model, color, is_active, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
@@ -36,12 +32,12 @@ def run(conn: sqlite3.Connection):
         cur.execute(sql, (
             int(v["id"]),
             uid,
-            _lpclean(plate),
             plate,
+            None,  # vehicle_name - not in source data
             v.get("make"),
             v.get("model"),
             v.get("color"),
-            v.get("year"),
+            1,  # is_active - default to true
             v.get("created_at"),
         ))
         inserted += 1
