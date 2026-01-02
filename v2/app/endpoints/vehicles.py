@@ -22,6 +22,16 @@ async def create_vehicle(
     ):
         check_token(token.credentials)
 
+        #check if clean license plate already exists
+        result = await db.execute(
+            select(models.Vehicle).where(
+                models.Vehicle.license_plate_clean == licenceplate_clean(vehicle.license_plate)
+            )
+        )
+        existing_vehicle = result.scalar_one_or_none()
+        if existing_vehicle:
+            raise HTTPException(status_code=400, detail="Vehicle with this license plate already exists")
+
         new_vehicle = models.Vehicle(
             users_id=current_user.id,
             license_plate=vehicle.license_plate,
