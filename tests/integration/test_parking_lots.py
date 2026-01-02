@@ -22,7 +22,7 @@ def test__add_parking_lot(headers: dict) -> None:
         "daytariff": 20.0,
         "latitude": 40.785091,
         "longitude": -73.968285,
-        "hotel_id": None
+        "business_id": None
     }
     response = requests.post(f"{BASE_URL}/parking-lots", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}, {response.text}"
@@ -38,7 +38,7 @@ def test_update_parking_lot(headers: dict) -> None:
         "daytariff": 20.0,
         "latitude": 40.785091,
         "longitude": -73.968285,
-        "hotel_id": None
+        "business_id": None
     }
     response = requests.put(f"{BASE_URL}/parking-lots/1", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}"
@@ -54,7 +54,7 @@ def delete_parking_lot(headers: dict) -> None:
         "daytariff": 20.0,
         "latitude": 40.785091,
         "longitude": -73.968285,
-        "hotel_id": None
+        "business_id": None
     }
     response = requests.post(f"{BASE_URL}/parking-lots", headers=headers, json=payload)
     parking_lot_id = response.json()["id"]
