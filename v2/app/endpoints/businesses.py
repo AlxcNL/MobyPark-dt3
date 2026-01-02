@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_
 
 from app.database import get_db
 from app import models, schemas
@@ -47,10 +47,19 @@ async def update_business(
     
 @router.post("/businesses", response_model=schemas.Message)
 async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.User).where(models.User.email == payload.email))
+    #username or email already exists
+    result = await db.execute(
+    select(models.User).where(
+        or_(
+            models.User.email == payload.email,
+            models.User.username == payload.username,
+            )
+        )
+    )
     user = result.scalar_one_or_none()
     if user:
         raise HTTPException(status_code=400, detail="Username already exists")
+    
     #if business with same name exists
     result = await db.execute(select(models.Business).where(models.Business.name == payload.business_name))
     business = result.scalar_one_or_none()
