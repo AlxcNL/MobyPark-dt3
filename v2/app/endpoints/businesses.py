@@ -72,6 +72,7 @@ async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = 
     )
     db.add(new_user)
     await db.commit()
+    await db.refresh(new_user)  
     
     # Query the newly added user to check if it has been added correctly
     result = await db.execute(
