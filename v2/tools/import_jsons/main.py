@@ -1,7 +1,7 @@
 import sqlite3
 import importlib
 
-DB_PATH = "./data/mobypark.db"
+DB_PATH = "data/mobypark.db"
 
 IMPORTERS = [
     "import_users",
