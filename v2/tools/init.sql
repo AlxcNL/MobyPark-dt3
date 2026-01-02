@@ -100,13 +100,16 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (session_id) REFERENCES parking_sessions(session_id) ON DELETE SET NULL,
     FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE SET NULL
 );
+CREATE INDEX IF NOT EXISTS fk_payments_users1_idx ON payments (initiator_users_id);
+CREATE INDEX IF NOT EXISTS fk_payments_sessions1_idx ON payments (sessions_id);
 
-CREATE TABLE hotels (
-	hotel_id INTEGER NOT NULL,
-	name VARCHAR NOT NULL,
-    address TEXT,
-	PRIMARY KEY (hotel_id)
-);
+
+CREATE TABLE businesses (
+	business_id INTEGER NOT NULL, 
+	name VARCHAR NOT NULL, 
+    address TEXT, 
+	PRIMARY KEY (business_id)
+)
 
 -- Insert sample data
 -- Default admin user
@@ -131,5 +134,5 @@ INSERT OR IGNORE INTO vehicles (user_id, license_plate, vehicle_name, brand, mod
 INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotel_id) VALUES
 (3, 'hotel_user', 'test2@mobypark.com', 'password1234', 'Test User', 'USER', NULL);
 
-INSERT OR IGNORE INTO hotels (hotel_id, name, address) VALUES
+INSERT OR IGNORE INTO businesses (business_id, name, address) VALUES
 (1, 'hotel1', 'Naamlaan 156');
