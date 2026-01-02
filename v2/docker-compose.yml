@@ -1,4 +1,10 @@
 services:
+  db-init:
+    build: .
+    volumes:
+      - ./tools:/code/tools
+      - ./data:/code/data
+    command: python /code/tools/init_db.py
   api:
     build: .
     ports:
@@ -6,11 +12,24 @@ services:
     volumes:
       - ./app:/code/app
       - ./data:/code/data
+      - ../tests:/code/tests
       - ./app/logs:/app/logs
     env_file:
       - .env
     depends_on:
-      - elasticsearch
+      db-init:
+        condition: service_completed_successfully
+      elasticsearch:
+        condition: service_started
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    labels:
+      - "co.elastic.logs/enabled=true"
+      - "co.elastic.logs/json.keys_under_root=true"
+      - "co.elastic.logs/json.add_error_key=true"
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
@@ -48,3 +67,6 @@ services:
 volumes:
   elasticsearch-data:
     driver: local
+  mobypark_logs:
+    driver: local
+
