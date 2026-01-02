@@ -51,6 +51,12 @@ async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = 
     user = result.scalar_one_or_none()
     if user:
         raise HTTPException(status_code=400, detail="Username already exists")
+    #if business with same name exists
+    result = await db.execute(select(models.Business).where(models.Business.name == payload.business_name))
+    business = result.scalar_one_or_none()
+    if business:
+        raise HTTPException(status_code=400, detail="Business name already exists")
+    
     new_business = models.Business(
         name=payload.business_name,
         address=payload.address
