@@ -30,7 +30,7 @@ class TokenResponse(BaseModel):
     expires_in: int = 600
 
 
-Role = Literal["user", "admin"]
+Role = Literal["user", "admin", "USER", "ADMIN"]
 
 class UserBase(BaseModel):
     username: str
@@ -60,9 +60,9 @@ class User(BaseModel):
     username: str
     email: str
     role: Role
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    birth_year: Optional[int] = None
+    # name: Optional[str] = None
+    # phone: Optional[str] = None
+    # birth_year: Optional[int] = None
     active: int
     created_at: datetime
     business_id: Optional[int]

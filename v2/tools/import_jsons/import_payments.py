@@ -25,7 +25,7 @@ def _parse_datetime(date_str: str | None) -> str | None:
 def _get_user_id_by_username(cur: sqlite3.Cursor, username: str | None):
     if not username:
         return None
-    cur.execute("SELECT user_id FROM users WHERE username = ? LIMIT 1", (username,))
+    cur.execute("SELECT id FROM users WHERE username = ? LIMIT 1", (username,))
     row = cur.fetchone()
     return row[0] if row else None
 

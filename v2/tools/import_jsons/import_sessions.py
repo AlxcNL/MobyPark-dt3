@@ -24,7 +24,7 @@ def run(conn: sqlite3.Connection):
     def _user_id_by_username(username: str | None):
         if not username:
             return None
-        cur.execute("SELECT user_id FROM users WHERE username = ? LIMIT 1", (username,))
+        cur.execute("SELECT id FROM users WHERE username = ? LIMIT 1", (username,))
         row = cur.fetchone()
         return row[0] if row else None
 
