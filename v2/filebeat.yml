@@ -1,0 +1,41 @@
+filebeat.inputs:
+  - type: filestream
+    id: mobypark-api-json-filelogs
+    enabled: true
+    paths:
+      - /app/logs/*.log
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+          add_error_key: true
+    tags: ["mobypark-api"]
+
+processors:
+  - add_fields:
+      target: ""
+      fields:
+        api_version: "v2"
+
+  - timestamp:
+      field: timestamp
+      target_field: "@timestamp"
+      layouts:
+        - '2006-01-02T15:04:05.000Z07:00'
+      ignore_missing: true
+      ignore_failure: true
+
+  - drop_fields:
+      fields: ["timestamp"]
+      ignore_missing: true
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  index: "mobypark-api-%{+yyyy.MM.dd}"
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+setup.template:
+  name: "mobypark-api"
+  pattern: "mobypark-api-*"

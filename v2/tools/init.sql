@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name TEXT NOT NULL,
     role TEXT DEFAULT 'USER' CHECK(role IN ('USER', 'ADMIN')),
     is_active BOOLEAN DEFAULT TRUE,
+    hotel_id INTEGER NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS parking_lots (
     hourly_rate REAL NOT NULL,
     daily_rate REAL NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
+    hotel_id INTEGER NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -98,12 +100,23 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (session_id) REFERENCES parking_sessions(session_id) ON DELETE SET NULL,
     FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE SET NULL
 );
+CREATE INDEX IF NOT EXISTS fk_payments_users1_idx ON payments (user_id);
+CREATE INDEX IF NOT EXISTS fk_payments_sessions1_idx ON payments (session_id);
+
+
+CREATE TABLE businesses (
+	business_id INTEGER NOT NULL, 
+	name VARCHAR NOT NULL, 
+    address TEXT, 
+	PRIMARY KEY (business_id)
+);
 
 -- Insert sample data
 -- Default admin user
-INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role) VALUES
-(1, 'admin', 'admin@mobypark.com', 'admin123', 'Administrator', 'ADMIN'),
-(2, 'testuser', 'test@mobypark.com', 'password123', 'Test User', 'USER');
+INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotel_id) VALUES
+(1, 'admin', 'admin@mobypark.com', 'admin123', 'Administrator', 'ADMIN', NULL),
+(2, 'testuser', 'test@mobypark.com', 'password123', 'Test User', 'USER', NULL),
+(3, 'ertu', 'test@ertu.nl','test123', 'ertu', 'ADMIN', NULL);
 
 -- Sample parking lots
 INSERT OR IGNORE INTO parking_lots (name, address, city, total_capacity, available_spots, hourly_rate, daily_rate) VALUES
@@ -117,3 +130,10 @@ INSERT OR IGNORE INTO parking_lots (name, address, city, total_capacity, availab
 INSERT OR IGNORE INTO vehicles (user_id, license_plate, vehicle_name, brand, model, color) VALUES
 (2, '12-ABC-3', 'My Car', 'Toyota', 'Corolla', 'Blue'),
 (2, '45-DEF-6', 'Work Van', 'Ford', 'Transit', 'White');
+
+-- Create user and hotel
+INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotel_id) VALUES
+(3, 'hotel_user', 'test2@mobypark.com', 'password1234', 'Test User', 'USER', NULL);
+
+INSERT OR IGNORE INTO businesses (business_id, name, address) VALUES
+(1, 'hotel1', 'Naamlaan 156');
