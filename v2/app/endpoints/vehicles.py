@@ -24,6 +24,16 @@ async def create_vehicle(
 ):
     check_token(token.credentials)
 
+        #check if clean license plate already exists
+    result = await db.execute(
+        select(models.Vehicle).where(
+            models.Vehicle.license_plate_clean == licenceplate_clean(vehicle.license_plate)
+        )
+    )
+    existing_vehicle = result.scalar_one_or_none()
+    if existing_vehicle:
+        raise HTTPException(status_code=400, detail="Vehicle with this license plate already exists")
+
     new_vehicle = models.Vehicle(
         users_id=current_user.id,
         license_plate=vehicle.license_plate,
@@ -31,13 +41,12 @@ async def create_vehicle(
         make=vehicle.make,
         model=vehicle.model,
         color=vehicle.color,
-        year=vehicle.year,
+        year=vehicle.year
     )
 
     db.add(new_vehicle)
     await db.commit()
     await db.refresh(new_vehicle)
-
     log_event(logging.INFO, "/vehicles", 201, "Vehicle created")
     return new_vehicle
 
@@ -63,7 +72,6 @@ async def get_vehicles(
     log_event(logging.INFO, "/vehicles", 200, "Vehicles listed")
     return vehicles
 
-
 @router.get("/vehicles/{user_id}", response_model=List[schemas.Vehicle])
 async def get_vehicles_for_user(
     user_id: int,
@@ -86,7 +94,6 @@ async def get_vehicles_for_user(
 
     log_event(logging.INFO, "/vehicles/{user_id}", 200, "Vehicles listed (admin)")
     return vehicles
-
 
 @router.put("/vehicles/{vehicle_id}", response_model=schemas.Vehicle)
 async def update_vehicle(

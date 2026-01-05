@@ -257,6 +257,15 @@ class BillingSummary(BaseModel):
     balance: float
     sessions: int
     average: float
+
+class MonthlyBilling(BaseModel):
+    year: int
+    month: int
+    amount: float
+    payed: float
+    balance: float
+    sessions: int
+    average: float
     
 class Business(BaseModel):
     name: str

@@ -63,6 +63,40 @@ async def billing_summary_me(
     )
 
 
+@router.get("/billing/monthly")
+async def billing_monthly_me(
+    db: AsyncSession = Depends(get_db),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    current_user: models.User = Depends(get_current_user),
+):
+    check_token(token.credentials)
+    print(current_user.id)
+
+    q = (
+        select(
+            func.strftime("%Y-%m", models.Session.start_date).label("month"),
+            func.count(models.Session.id).label("sessions"),
+            func.sum(models.Session.cost).label("total_cost_cents"),
+        )
+        .join(models.Vehicle, models.Session.vehicles_id == models.Vehicle.id)
+        .where(models.Vehicle.users_id == current_user.id)
+        .group_by("month")
+        .order_by("month")
+    )
+
+    res = await db.execute(q)
+
+    return [
+        {
+            "month": month,
+            "sessions": sessions,
+            "total_cost": round((total_cost_cents or 0) / 100.0, 2),
+        }
+        for month, sessions, total_cost_cents in res.all()
+    ]
+
+
+
 @router.get("/billing/{uid}", response_model=schemas.BillingSummary)
 async def billing_summary_user(
     uid: int,

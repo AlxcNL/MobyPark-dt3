@@ -236,6 +236,6 @@ class Payment(Base):
 class Business(Base):
     __tablename__ = "businesses"
     
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column("business_id", primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     address: Mapped[str] = mapped_column(String, nullable=False)
