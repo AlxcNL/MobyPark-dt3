@@ -49,6 +49,13 @@ class User(Base):
         passive_deletes=True,
         foreign_keys="Payment.initiator_users_id",
     )
+    
+    hotel_id: Mapped[int] = mapped_column(
+        ForeignKey("hotels.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=True,
+        index=True
+    )
+    hotel_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
 class Vehicle(Base):
     __tablename__ = "vehicles"
@@ -116,6 +123,8 @@ class ParkingLot(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    hotel_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    
 
 class Session(Base):
     __tablename__ = "sessions"
@@ -223,3 +232,10 @@ class Payment(Base):
         back_populates="payments_session",
         foreign_keys=[sessions_id]
     )
+    
+class Hotel(Base):
+    __tablename__ = "hotels"
+    
+    hotel_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    address: Mapped[str] = mapped_column(String, nullable=False)

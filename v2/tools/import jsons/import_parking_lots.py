@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-PARKING_LOTS_JSON = "./tools/import jsons/data/parking-lots.json"
+PARKING_LOTS_JSON = "./tools/import_jsons/data/parking-lots.json"
 
 def run(conn: sqlite3.Connection):
     cur = conn.cursor()

@@ -2,7 +2,7 @@ import json
 import re
 import sqlite3
 
-SESSIONS_JSON = "./tools/import jsons/data/pdata/p1-sessions.json"
+SESSIONS_JSON = "./tools/import_jsons/data/pdata/p1-sessions.json"
 
 def _lpclean(plate: str) -> str:
     return re.sub(r"[^A-Za-z0-9]", "", plate).upper()

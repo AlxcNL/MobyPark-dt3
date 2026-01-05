@@ -22,6 +22,7 @@ def test__add_parking_lot(headers: dict) -> None:
         "daytariff": 20.0,
         "latitude": 40.785091,
         "longitude": -73.968285,
+        "hotel_id": None
     }
     response = requests.post(f"{BASE_URL}/parking-lots", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}, {response.text}"
@@ -37,6 +38,7 @@ def test_update_parking_lot(headers: dict) -> None:
         "daytariff": 20.0,
         "latitude": 40.785091,
         "longitude": -73.968285,
+        "hotel_id": None
     }
     response = requests.put(f"{BASE_URL}/parking-lots/1", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}"
@@ -52,6 +54,7 @@ def delete_parking_lot(headers: dict) -> None:
         "daytariff": 20.0,
         "latitude": 40.785091,
         "longitude": -73.968285,
+        "hotel_id": None
     }
     response = requests.post(f"{BASE_URL}/parking-lots", headers=headers, json=payload)
     parking_lot_id = response.json()["id"]
@@ -66,21 +69,6 @@ def delete_parking_lot(headers: dict) -> None:
 def test_get_parking_lot_non_existing(headers: dict) -> None:
     response = requests.get(f"{BASE_URL}/parking-lots/9999", headers=headers)
     assert response.status_code == 404
-
-# def test_add_parking_lot_empty_required_field(headers: dict) -> None:
-#     payload = {
-#         "name": "",
-#         "location": "Downtown",
-#         "address": "123 Main Street, Cityville",
-#         "capacity": 150,
-#         "reserved": 20,
-#         "tariff": 2.5,
-#         "daytariff": 20.0,
-#         "latitude": 40.785091,
-#         "longitude": -73.968285,
-#     }
-#     response = requests.post(f"{BASE_URL}/parking-lots", headers=headers, json=payload)
-#     assert response.status_code >= 400
 
 def test_update_parking_lot_validation(headers: dict) -> None:
     payload = {
