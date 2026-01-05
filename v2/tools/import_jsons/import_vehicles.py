@@ -12,7 +12,7 @@ def run(conn: sqlite3.Connection):
 
     # quick helper to verify user exists
     def _user_exists(user_id: int) -> bool:
-        cur.execute("SELECT 1 FROM users WHERE user_id = ? LIMIT 1", (user_id,))
+        cur.execute("SELECT 1 FROM users WHERE id = ? LIMIT 1", (user_id,))
         return cur.fetchone() is not None
 
     sql = """

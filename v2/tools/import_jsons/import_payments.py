@@ -31,7 +31,7 @@ def _get_user_id_by_username(cur: sqlite3.Cursor, username: str | None):
 
 
 def _session_exists(cur: sqlite3.Cursor, session_id: int) -> bool:
-    cur.execute("SELECT 1 FROM parking_sessions WHERE session_id = ? LIMIT 1", (session_id,))
+    cur.execute("SELECT 1 FROM sessions WHERE id = ? LIMIT 1", (session_id,))
     return cur.fetchone() is not None
 
 
@@ -44,9 +44,8 @@ def run(conn: sqlite3.Connection):
 
     sql = """
         INSERT OR REPLACE INTO payments
-            (payment_id, user_id, session_id, reservation_id, amount, currency,
-             payment_method, transaction_id, status, payment_date, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (id, initiator_users_id, sessions_id, amount, method, hash, completed_at, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     inserted = skipped_user = skipped_session = 0
@@ -66,9 +65,6 @@ def run(conn: sqlite3.Connection):
         t_data = p.get("t_data") or {}
         completed_at = _parse_datetime(p.get("completed"))
 
-        # Determine status based on whether payment was completed
-        status = "COMPLETED" if completed_at else "PENDING"
-
         # Convert amount from whatever format to float
         amount = float(p.get("amount", 0)) if p.get("amount") is not None else 0.0
 
@@ -78,12 +74,9 @@ def run(conn: sqlite3.Connection):
                 idx,
                 user_id,
                 int(session_id),
-                None,  # reservation_id - not in source data
                 amount,
-                "EUR",  # currency - default
                 t_data.get("method"),
                 p.get("hash"),
-                status,
                 completed_at,
                 _parse_datetime(p.get("created_at")),
             ),

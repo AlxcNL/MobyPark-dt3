@@ -35,18 +35,22 @@ async def create_session(
         log_event(logging.WARNING, "/sessions/start", 404, "Parking lot not found")
         raise HTTPException(status_code=404, detail="Parking lot not found")
 
-    vehicle_result = await db.execute(
-        select(models.Vehicle).where(models.Vehicle.id == session.vehicles_id)
-    )
-    vehicle = vehicle_result.scalars().first()
-    if not vehicle:
-        log_event(logging.WARNING, "/sessions/start", 404, "Vehicle not found")
-        raise HTTPException(status_code=404, detail="Vehicle not found")
+    vehicle = None
+    if session.vehicle_id:
+        vehicle_result = await db.execute(
+            select(models.Vehicle).where(models.Vehicle.vehicle_id == session.vehicle_id)
+        )
+        vehicle = vehicle_result.scalars().first()
+        if not vehicle:
+            log_event(logging.WARNING, "/sessions/start", 404, "Vehicle not found")
+            raise HTTPException(status_code=404, detail="Vehicle not found")
 
     new_session = models.Session(
         parking_lots_id=session.parking_lots_id,
-        vehicles_id=session.vehicles_id,
+        vehicle_id=session.vehicle_id,
+        license_plate=session.license_plate,
         start_date=datetime.now(timezone.utc),
+        hourly_rate=parking_lot.hourly_rate,
     )
 
     db.add(new_session)
@@ -72,7 +76,7 @@ async def stop_session(
         select(models.Session).where(
             models.Session.id == session_id,
             models.Session.parking_lots_id == lid,
-            models.Session.stop_date.is_(None),
+            models.Session.end_date.is_(None),
         )
     )
     session = result.scalars().first()
@@ -88,15 +92,15 @@ async def stop_session(
         log_event(logging.WARNING, "/sessions/{session_id}/stop", 404, "Parking lot not found")
         raise HTTPException(status_code=404, detail="Parking lot not found")
 
-    session.stop_date = datetime.now(timezone.utc)
+    session.end_date = datetime.now(timezone.utc)
     start = session.start_date
     if start.tzinfo is None:
         start = start.replace(tzinfo=timezone.utc)
 
-    session.duration_minutes = int((session.stop_date - start).total_seconds() // 60)
+    session.duration_minutes = int((session.end_date - start).total_seconds() // 60)
 
-    price_eur, hours, days = calculate_price(parking_lot, start, session.stop_date)
-    session.cost = float(price_eur * 100)
+    price_eur, hours, days = calculate_price(parking_lot, start, session.end_date)
+    session.calculated_amount = float(price_eur)
 
     await db.commit()
     await db.refresh(session)
@@ -124,7 +128,7 @@ async def get_sessions(
         )
     else:
         vehicle_result = await db.execute(
-            select(models.Vehicle.id).where(models.Vehicle.users_id == current_user.id)
+            select(models.Vehicle.vehicle_id).where(models.Vehicle.user_id == current_user.id)
         )
         vehicle_ids = [v[0] for v in vehicle_result.all()]
 
@@ -132,7 +136,7 @@ async def get_sessions(
             select(models.Session)
             .where(
                 models.Session.parking_lots_id == lid,
-                models.Session.vehicles_id.in_(vehicle_ids),
+                models.Session.vehicle_id.in_(vehicle_ids),
             )
             .offset(page.offset)
             .limit(page.limit)
@@ -163,14 +167,14 @@ async def get_session(
         )
     else:
         vehicle_result = await db.execute(
-            select(models.Vehicle.id).where(models.Vehicle.users_id == current_user.id)
+            select(models.Vehicle.vehicle_id).where(models.Vehicle.user_id == current_user.id)
         )
         vehicle_ids = [v[0] for v in vehicle_result.all()]
 
         query = select(models.Session).where(
             models.Session.id == session_id,
             models.Session.parking_lots_id == lid,
-            models.Session.vehicles_id.in_(vehicle_ids),
+            models.Session.vehicle_id.in_(vehicle_ids),
         )
 
     result = await db.execute(query)

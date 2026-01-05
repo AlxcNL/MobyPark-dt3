@@ -12,7 +12,7 @@ def run(conn: sqlite3.Connection):
 
     sql = """
         INSERT OR REPLACE INTO users
-            (id, username, email, password_hash, full_name, role, is_active, created_at)
+            (id, username, email, password_hash, full_name, role, active, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """
 

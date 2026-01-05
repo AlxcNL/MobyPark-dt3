@@ -34,20 +34,22 @@ async def create_payment(
         log_event(logging.WARNING, "/payments", 404, "Payment creation failed: session not found")
         raise HTTPException(status_code=404, detail="Session not found")
 
-    result = await db.execute(
-        select(models.Vehicle).where(models.Vehicle.id == session.vehicles_id)
-    )
-    vehicle = result.scalars().first()
-    if not vehicle:
-        log_event(logging.WARNING, "/payments", 404, "Payment creation failed: vehicle not found")
-        raise HTTPException(status_code=404, detail="Vehicle not found")
+    vehicle = None
+    if session.vehicle_id:
+        result = await db.execute(
+            select(models.Vehicle).where(models.Vehicle.vehicle_id == session.vehicle_id)
+        )
+        vehicle = result.scalars().first()
+        if not vehicle:
+            log_event(logging.WARNING, "/payments", 404, "Payment creation failed: vehicle not found")
+            raise HTTPException(status_code=404, detail="Vehicle not found")
 
     new_payment = models.Payment(
-        amount=session.cost,
+        amount=session.calculated_amount,
         sessions_id=payment.sessions_id,
         initiator_users_id=current_user.id,
         created_at=datetime.now(timezone.utc),
-        hash=generate_payment_hash(str(session.id), vehicle),
+        hash=generate_payment_hash(str(session.id), vehicle) if vehicle else None,
         method=payment.method,
         issuer=payment.issuer,
         bank=payment.bank,

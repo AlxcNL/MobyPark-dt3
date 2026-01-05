@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     cost REAL NOT NULL DEFAULT 0,
     FOREIGN KEY (parking_lots_id) REFERENCES parking_lots (id)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (vehicles_id) REFERENCES vehicles (id)
+    FOREIGN KEY (vehicles_id) REFERENCES vehicles (vehicle_id)
         ON DELETE CASCADE ON UPDATE CASCADE
     );
     CREATE INDEX IF NOT EXISTS fk_reservation_parking_lots1_idx ON reservation (parking_lots_id);

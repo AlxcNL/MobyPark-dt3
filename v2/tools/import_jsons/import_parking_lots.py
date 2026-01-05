@@ -15,7 +15,7 @@ def run(conn: sqlite3.Connection):
 
     sql = """
         INSERT OR REPLACE INTO parking_lots
-            (lot_id, name, address, city, postal_code, latitude, longitude,
+            (id, name, address, city, postal_code, latitude, longitude,
              total_capacity, available_spots, hourly_rate, daily_rate, is_active, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
