@@ -33,7 +33,7 @@ async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_d
         name=payload.name,
         phone=payload.phone,
         birth_year=payload.birth_year,
-        role=payload.role
+        role=payload.role.upper()
     )
     db.add(new_user)
     await db.commit()

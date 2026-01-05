@@ -82,7 +82,7 @@ async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = 
         name=payload.name,
         phone=payload.phone,
         birth_year=payload.birth_year,
-        role=payload.role,
+        role=payload.role.upper(),
         business_id=new_business.id
     )
     db.add(new_user)
