@@ -42,6 +42,6 @@ def check_token(token: str):
     return user_id
 
 def require_admin(user: str):
-    if not user or getattr(user, "role", None) != "admin":
+    if not user or getattr(user, "role", None) != "ADMIN":
         raise HTTPException(status_code=403,detail="Admin privileges required")
     return True

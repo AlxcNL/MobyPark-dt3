@@ -119,7 +119,7 @@ async def get_sessions(
 ):
     check_token(token.credentials)
 
-    if current_user.role == "admin":
+    if current_user.role == "ADMIN":
         query = (
             select(models.Session)
             .where(models.Session.parking_lots_id == lid)
@@ -160,7 +160,7 @@ async def get_session(
 ):
     check_token(token.credentials)
 
-    if current_user.role == "admin":
+    if current_user.role == "ADMIN":
         query = select(models.Session).where(
             models.Session.id == session_id,
             models.Session.parking_lots_id == lid,

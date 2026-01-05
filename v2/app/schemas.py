@@ -168,8 +168,8 @@ class ReservationCreate(ReservationBase):
 
 
 class ReservationUpdate(BaseModel):
-    vehicles_id: Optional[int] = None
-    parking_lots_id: Optional[int] = None
+    vehicles_id: Optional[int] = Field(default=None, ge=1)
+    parking_lots_id: Optional[int] = Field(default=None, ge=1)
     start_time: Optional[str] = None
     end_time: Optional[str] = None
     status: Optional[ReservationStatus] = None
