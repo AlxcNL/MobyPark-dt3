@@ -100,8 +100,8 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (session_id) REFERENCES parking_sessions(session_id) ON DELETE SET NULL,
     FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE SET NULL
 );
-CREATE INDEX IF NOT EXISTS fk_payments_users1_idx ON payments (initiator_users_id);
-CREATE INDEX IF NOT EXISTS fk_payments_sessions1_idx ON payments (sessions_id);
+CREATE INDEX IF NOT EXISTS fk_payments_users1_idx ON payments (user_id);
+CREATE INDEX IF NOT EXISTS fk_payments_sessions1_idx ON payments (session_id);
 
 
 CREATE TABLE businesses (
@@ -109,13 +109,14 @@ CREATE TABLE businesses (
 	name VARCHAR NOT NULL, 
     address TEXT, 
 	PRIMARY KEY (business_id)
-)
+);
 
 -- Insert sample data
 -- Default admin user
 INSERT OR IGNORE INTO users (user_id, username, email, password_hash, full_name, role, hotel_id) VALUES
 (1, 'admin', 'admin@mobypark.com', 'admin123', 'Administrator', 'ADMIN', NULL),
-(2, 'testuser', 'test@mobypark.com', 'password123', 'Test User', 'USER', NULL);
+(2, 'testuser', 'test@mobypark.com', 'password123', 'Test User', 'USER', NULL),
+(3, 'ertu', 'test@ertu.nl','test123', 'ertu', 'ADMIN', NULL);
 
 -- Sample parking lots
 INSERT OR IGNORE INTO parking_lots (name, address, city, total_capacity, available_spots, hourly_rate, daily_rate) VALUES

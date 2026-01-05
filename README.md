@@ -55,23 +55,7 @@ Deze instructies helpen je om de MobyPark applicatie lokaal te draaien.
    - Kibana op poort 5601
    - Filebeat (log collector)
 
-5. **Initialiseer de database**
-
-   Voer de database initialisatie script uit in de container:
-
-   ```bash
-   docker exec -it v2-api-1 python tools/init_db.py
-   ```
-
-   Of alternatief, ga in de container en voer het script uit:
-
-   ```bash
-   docker exec -it v2-api-1 /bin/zsh
-   python tools/init_db.py
-   exit
-   ```
-
-6. **Toegang tot de applicatie**
+5.**Toegang tot de applicatie**
 
    - API: http://localhost:8000
    - API Documentatie (Swagger): http://localhost:8000/docs
