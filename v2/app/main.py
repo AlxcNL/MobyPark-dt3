@@ -2,7 +2,7 @@ import logging
 
 from fastapi import FastAPI
 from app.logging_setup import setup_logging 
-from app.endpoints import oauth, vehicles, parking_lots, reservations, sessions, payments, billing
+from app.endpoints import oauth, vehicles, parking_lots, reservations, sessions, payments, billing, businesses
 
 setup_logging(logging.INFO)
 app = FastAPI(title="MobyPark API v2")
@@ -13,6 +13,7 @@ app.include_router(reservations.router)
 app.include_router(sessions.router)
 app.include_router(payments.router)
 app.include_router(billing.router)
+app.include_router(businesses.router)
 
 @app.get("/")
 async def root():

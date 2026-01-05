@@ -44,7 +44,10 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(min_length=6)
 
-
+class BusinessCreate(UserCreate):
+    business_name: str
+    address: str
+    
 class UserUpdate(BaseModel):
     # update profile fields (not password)
     name: Optional[str] = None
@@ -62,7 +65,7 @@ class User(BaseModel):
     birth_year: Optional[int] = None
     active: int
     created_at: datetime
-    hotel_id: Optional[int]
+    business_id: Optional[int]
     model_config = ConfigDict(from_attributes=True)
 
 class VehicleBase(BaseModel):
@@ -78,11 +81,10 @@ class ParkingLotBase(BaseModel):
     daytariff: float
     latitude: float
     longitude: float
-    hotel_id: Optional[int]
 
 
 class CreateParkingLot(ParkingLotBase):
-    pass
+    business_id: Optional[int]
 
 class UpdateParkingLot(BaseModel):
     name: Optional[str] = None
@@ -115,7 +117,7 @@ class ParkingLotDetails(BaseModel):
     created_at: datetime
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-    hotel_id: Optional[int] = None
+    business_id: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
 
 class VehicleBase(BaseModel):
@@ -256,10 +258,14 @@ class BillingSummary(BaseModel):
     sessions: int
     average: float
     
-class Hotel(BaseModel):
+class Business(BaseModel):
     name: str
     address: str
+
+class BusinessRead(BaseModel):
+    name: Optional[str]
+    address: Optional[str]
     
-class HotelUpdate(BaseModel):
+class BusinessUpdate(BaseModel):
     name: Optional[str]
     address: Optional[str]

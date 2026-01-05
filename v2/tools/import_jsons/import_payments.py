@@ -1,15 +1,8 @@
 import json
 import sqlite3
 from datetime import datetime
-from pathlib import Path
 
 PAYMENTS_JSON = "./tools/import_jsons/data/payments.json"
-
-
-def _cents(value) -> int:
-    if value in (None, ""):
-        return 0
-    return int(round(float(value) * 100))
 
 
 def _parse_datetime(date_str: str | None) -> str | None:
@@ -32,13 +25,13 @@ def _parse_datetime(date_str: str | None) -> str | None:
 def _get_user_id_by_username(cur: sqlite3.Cursor, username: str | None):
     if not username:
         return None
-    cur.execute("SELECT id FROM users WHERE username = ? LIMIT 1", (username,))
+    cur.execute("SELECT user_id FROM users WHERE username = ? LIMIT 1", (username,))
     row = cur.fetchone()
     return row[0] if row else None
 
 
 def _session_exists(cur: sqlite3.Cursor, session_id: int) -> bool:
-    cur.execute("SELECT 1 FROM sessions WHERE id = ? LIMIT 1", (session_id,))
+    cur.execute("SELECT 1 FROM parking_sessions WHERE session_id = ? LIMIT 1", (session_id,))
     return cur.fetchone() is not None
 
 
@@ -51,8 +44,9 @@ def run(conn: sqlite3.Connection):
 
     sql = """
         INSERT OR REPLACE INTO payments
-            (id, amount, sessions_id, initiator_users_id, created_at, completed_at, hash, method, issuer, bank)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (payment_id, user_id, session_id, reservation_id, amount, currency,
+             payment_method, transaction_id, status, payment_date, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     inserted = skipped_user = skipped_session = 0
@@ -70,19 +64,28 @@ def run(conn: sqlite3.Connection):
             continue
 
         t_data = p.get("t_data") or {}
+        completed_at = _parse_datetime(p.get("completed"))
+
+        # Determine status based on whether payment was completed
+        status = "COMPLETED" if completed_at else "PENDING"
+
+        # Convert amount from whatever format to float
+        amount = float(p.get("amount", 0)) if p.get("amount") is not None else 0.0
+
         cur.execute(
             sql,
             (
                 idx,
-                _cents(p.get("amount")),
-                int(session_id),
                 user_id,
-                _parse_datetime(p.get("created_at")),
-                _parse_datetime(p.get("completed")),
-                p.get("hash"),
+                int(session_id),
+                None,  # reservation_id - not in source data
+                amount,
+                "EUR",  # currency - default
                 t_data.get("method"),
-                t_data.get("issuer"),
-                t_data.get("bank"),
+                p.get("hash"),
+                status,
+                completed_at,
+                _parse_datetime(p.get("created_at")),
             ),
         )
         inserted += 1
