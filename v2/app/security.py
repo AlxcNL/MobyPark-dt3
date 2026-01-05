@@ -45,4 +45,3 @@ def require_admin(user: str):
     if not user or getattr(user, "role", None) != "admin":
         raise HTTPException(status_code=403,detail="Admin privileges required")
     return True
-    
