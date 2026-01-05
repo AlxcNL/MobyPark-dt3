@@ -131,6 +131,5 @@ async def delete_parking_lot(
 
     await db.delete(lot)
     await db.commit()
-
     log_event(logging.INFO, "/parking-lots/{lot_id}", 200, "Parking lot deleted")
     return schemas.Message(message="Parking lot deleted successfully.")

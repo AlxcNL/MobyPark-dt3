@@ -110,7 +110,6 @@ async def update_user(
 
     db.add(current_user)
     await db.commit()
-
     if revoke:
         remove_token(creds.credentials)
         log_event(logging.INFO, "/profile", 200, "Password updated, token revoked")
