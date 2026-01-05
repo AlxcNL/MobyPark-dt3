@@ -17,7 +17,7 @@ def run(conn: sqlite3.Connection):
         return cur.fetchone() is not None
 
     def _get_lot_rate(lot_id: int) -> float:
-        cur.execute("SELECT hourly_rate FROM parking_lots WHERE id = ? LIMIT 1", (lot_id,))
+        cur.execute("SELECT tariff FROM parking_lots WHERE id = ? LIMIT 1", (lot_id,))
         row = cur.fetchone()
         return row[0] if row else 0.0
 

@@ -50,7 +50,7 @@ async def create_session(
         vehicle_id=session.vehicle_id,
         license_plate=session.license_plate,
         start_date=datetime.now(timezone.utc),
-        hourly_rate=parking_lot.hourly_rate,
+        hourly_rate=parking_lot.tariff,
     )
 
     db.add(new_session)

@@ -60,9 +60,9 @@ class User(BaseModel):
     username: str
     email: str
     role: Role
-    # name: Optional[str] = None
-    # phone: Optional[str] = None
-    # birth_year: Optional[int] = None
+    name: str
+    phone: Optional[str] = None
+    birth_year: int
     active: int
     created_at: datetime
     business_id: Optional[int]

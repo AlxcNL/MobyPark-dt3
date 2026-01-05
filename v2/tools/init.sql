@@ -4,10 +4,12 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    full_name TEXT NOT NULL,
+    name TEXT NOT NULL,
+    phone TEXT,
+    birth_year INTEGER NOT NULL,
     role TEXT DEFAULT 'USER' CHECK(role IN ('USER', 'ADMIN')),
     active BOOLEAN DEFAULT TRUE,
-    business_id INTEGER NULL, 
+    business_id INTEGER NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -16,19 +18,20 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS parking_lots (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    location TEXT NOT NULL,
     address TEXT NOT NULL,
-    city TEXT NOT NULL,
-    postal_code TEXT,
     latitude REAL,
     longitude REAL,
-    total_capacity INTEGER NOT NULL,
-    available_spots INTEGER NOT NULL,
-    hourly_rate REAL NOT NULL,
-    daily_rate REAL NOT NULL,
+    capacity INTEGER NOT NULL DEFAULT 0,
+    reserved INTEGER NOT NULL DEFAULT 0,
+    tariff REAL NOT NULL,
+    daytariff REAL NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     business_id INTEGER NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (capacity >= 0),
+    CHECK (reserved >= 0 AND reserved <= capacity)
 );
 
 -- Create vehicles table

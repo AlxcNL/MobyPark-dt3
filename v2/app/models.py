@@ -26,7 +26,9 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
-    full_name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    phone: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    birth_year: Mapped[int] = mapped_column(Integer, nullable=False)
     role: Mapped[str] = mapped_column(String, nullable=False, default="USER")
     active: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     business_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
@@ -88,23 +90,23 @@ class ParkingLot(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
+    location: Mapped[str] = mapped_column(String, nullable=False)
     address: Mapped[str] = mapped_column(String, nullable=False)
-    city: Mapped[str] = mapped_column(String, nullable=False)
-    postal_code: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    total_capacity: Mapped[int] = mapped_column(Integer, nullable=False)
-    available_spots: Mapped[int] = mapped_column(Integer, nullable=False)
-    hourly_rate: Mapped[float] = mapped_column(Float, nullable=False)
-    daily_rate: Mapped[float] = mapped_column(Float, nullable=False)
+    capacity: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    reserved: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    tariff: Mapped[float] = mapped_column(Float, nullable=False)
+    daytariff: Mapped[float] = mapped_column(Float, nullable=False)
     is_active: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    business_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     __table_args__ = (
-        CheckConstraint("total_capacity >= 0", name="ck_parking_lots_capacity"),
+        CheckConstraint("capacity >= 0", name="ck_parking_lots_capacity"),
         CheckConstraint(
-            "available_spots >= 0 AND available_spots <= total_capacity", name="ck_parking_lots_available"
+            "reserved >= 0 AND reserved <= capacity", name="ck_parking_lots_available"
         ),
     )
 
@@ -119,8 +121,6 @@ class ParkingLot(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    business_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    
 
 class Session(Base):
     __tablename__ = "sessions"
