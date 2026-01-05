@@ -13,15 +13,19 @@ from app.security import (
     remove_token, remove_all_tokens_for_user
 )
 
+from app.logging_setup import log_event
+
 router = APIRouter(prefix="", tags=["auth"])  
 bearer_scheme = HTTPBearer(auto_error=True)
+logger = logging.getLogger(__name__)
 
 @router.post("/register", response_model=schemas.Message)
 async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.User).where(models.User.email == payload.email))
     user = result.scalar_one_or_none()
     if user:
-        raise HTTPException(status_code=400, detail="Username already exists")
+        log_event(logging.WARNING, "/register", 400, "User registration failed: user already exists")
+        raise HTTPException(status_code=400, detail="Email already exists")
     new_user = models.User(
         username=payload.username,
         email=payload.email,
@@ -33,7 +37,7 @@ async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_d
     )
     db.add(new_user)
     await db.commit()
-    logging.info(f"User registered: {payload.username}")
+    log_event(logging.WARNING, "/register", 200, "User registration successfully")
     return schemas.Message(message="User registered successfully.")
 
 @router.post("/login", response_model=schemas.TokenResponse)
@@ -41,25 +45,39 @@ async def login(payload: schemas.LoginRequest, db: AsyncSession = Depends(get_db
     
     result = await db.execute(select(models.User).where(models.User.username == payload.username))
     user = result.scalar_one_or_none()
-    print(user)
+    
     if not user or not verify_password(payload.password, user.password_hash):
+        log_event(logging.WARNING, "/login", 401, "Login failed: invalid credentials")
         raise HTTPException(status_code=401, detail="Invalid username or password")
+    
     remove_all_tokens_for_user(user.id)
     token = create_token(user.id)
+
+    log_event(logging.INFO, "/login", 200, "Login succeeded")
     return schemas.TokenResponse(access_token=token)
 
 @router.post("/logout")
 async def logout(creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
     token = creds.credentials
-    check_token(token)
+
+    try:
+        check_token(token)
+    except HTTPException:
+        log_event(logging.WARNING, "/logout", 401, "Logout failed: invalid token")
+        raise
+
     remove_token(token)
+
+    log_event(logging.INFO, "/logout", 200, "Logout succeeded")
     return schemas.Message(message="Logged out successfully.")
 
 @router.get("/profile", response_model=schemas.User)
 async def get_profile(current_user: models.User = Depends(get_current_user)):
+    # Als get_current_user faalt, wordt al een 401 gegooid → geen extra log nodig
+    log_event(logging.INFO, "/profile", 200, "Profile retrieved successfully")
     return current_user
 
-@router.put("/profile", response_model=schemas.Message)
+@router.put("/profile", response_model=schemas.User)
 async def update_user(
     payload: schemas.UserUpdate,
     creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
@@ -67,6 +85,8 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
 ):
     changed = False
+    revoke = False
+
     # safe profile fields
     if payload.name is not None:
         current_user.name = payload.name
@@ -77,25 +97,23 @@ async def update_user(
     if payload.birth_year is not None:
         current_user.birth_year = payload.birth_year
         changed = True
+
     # optional password change
-    new_pw = getattr(payload, "password", None)
-    if new_pw:
-        current_user.password_hash = hash_password(new_pw)
+    if getattr(payload, "password", None):
+        current_user.password_hash = hash_password(payload.password)
         changed = True
         revoke = True
-    else:
-        revoke = False
 
-    if changed:
-        db.add(current_user)
-        await db.commit()
-    else:
+    if not changed:
+        log_event(logging.WARNING, "/profile", 400, "Profile update skipped: no changes provided")
         return schemas.Message(message="No changes provided.")
 
+    db.add(current_user)
+    await db.commit()
     if revoke:
-        token = creds.credentials
-        remove_token(token)
+        remove_token(creds.credentials)
+        log_event(logging.INFO, "/profile", 200, "Password updated, token revoked")
         return schemas.Message(message="Password updated. Please log in again.")
 
-    return schemas.Message(message="Profile updated successfully.")
-
+    log_event(logging.INFO, "/profile", 200, "Profile updated successfully")
+    return current_user

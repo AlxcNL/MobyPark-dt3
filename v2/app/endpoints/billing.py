@@ -12,6 +12,8 @@ from app import models, schemas
 from app.dependencies import get_current_user, check_token, calculate_price, tr_hash, sum_paid_eur
 from app.security import require_admin
 
+from app.logging_setup import log_event
+
 router = APIRouter(prefix="", tags=["billing"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
@@ -23,7 +25,6 @@ async def billing_summary_me(
 ):
     check_token(token.credentials)
 
-    # Sessions belonging to the user's vehicles, with lot + vehicle
     q = (
         select(models.Session, models.ParkingLot, models.Vehicle)
         .join(models.Vehicle, models.Session.vehicles_id == models.Vehicle.id)
@@ -31,14 +32,13 @@ async def billing_summary_me(
         .where(models.Vehicle.users_id == current_user.id)
     )
     res = await db.execute(q)
-    rows = res.all()  # list[(Session, ParkingLot, Vehicle)]
+    rows = res.all()
 
     total_amount = 0.0
     total_paid = 0.0
     sessions_count = 0
 
     for s, lot, veh in rows:
-        # compute amount per legacy rules (returns euros)
         amount_eur, _hours, _days = calculate_price(lot, s.start_date, s.stop_date)
         thash = tr_hash(s.id, veh.license_plate)
         paid_eur = await sum_paid_eur(db, s.id, thash)
@@ -51,6 +51,8 @@ async def billing_summary_me(
     total_paid = round(total_paid, 2)
     balance = round(total_amount - total_paid, 2)
     average = round(total_amount / sessions_count, 2) if sessions_count else 0.0
+
+    log_event(logging.INFO, "/billing", 200, "Billing summary retrieved")
 
     return schemas.BillingSummary(
         amount=total_amount,
@@ -131,6 +133,8 @@ async def billing_summary_user(
     total_paid = round(total_paid, 2)
     balance = round(total_amount - total_paid, 2)
     average = round(total_amount / sessions_count, 2) if sessions_count else 0.0
+
+    log_event(logging.INFO, "/billing/{uid}", 200, "Billing summary retrieved (admin)")
 
     return schemas.BillingSummary(
         amount=total_amount,

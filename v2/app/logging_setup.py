@@ -1,28 +1,45 @@
+import json
 import logging
-import sys
-from logging.handlers import RotatingFileHandler
-from ecs_logging import StdlibFormatter
-from pathlib import Path
+import os
+from datetime import date, datetime, timezone
 
-LOG_DIR = Path("logs")
-LOG_FILE = LOG_DIR / "mobypark_api.log"
+LOG_DIR = "app/logs"
 
-def setup_logging():
-    LOG_DIR.mkdir(exist_ok=True)
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    
-    if logger.hasHandlers():
-        logger.handlers.clear()
-    
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(StdlibFormatter())
-    logger.addHandler(console_handler)
-    file_handler = RotatingFileHandler(
-        LOG_FILE,
-        maxBytes=10485760, # 10MB
-        backupCount=5,
-        encoding='utf-8'
-    )
-    file_handler.setFormatter(StdlibFormatter())
-    logger.addHandler(file_handler)
+class DefaultContextFilter(logging.Filter):
+    def filter(self, record):
+        if not hasattr(record, "endpoint"):
+            record.endpoint = None
+        if not hasattr(record, "httpcode"):
+            record.httpcode = None
+        return True
+
+class JsonFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        data = {
+            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(timespec="milliseconds"),
+            "log_level": record.levelname,
+            "endpoint": record.endpoint,
+            "httpcode": record.httpcode,
+            "message": record.getMessage(),
+        }
+        return json.dumps(data, ensure_ascii=False)
+
+def setup_logging(log_level):
+    os.makedirs(LOG_DIR, exist_ok=True)
+
+    today = date.today().isoformat()
+    logfile = f"{LOG_DIR}/mobipark_api_{today}.log"
+
+    handler = logging.FileHandler(logfile)
+    handler.setLevel(log_level)
+    handler.setFormatter(JsonFormatter())
+
+    root = logging.getLogger()
+    root.setLevel(log_level)
+    root.handlers = [handler]  # simpel: alleen file logging
+    root.addFilter(DefaultContextFilter())
+
+logger = logging.getLogger("mobypark")
+
+def log_event(level, endpoint: str, httpcode: int, msg: str):
+    logger.log(level, msg, extra={"endpoint": endpoint, "httpcode": httpcode})
