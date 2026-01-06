@@ -459,3 +459,153 @@ docker compose logs -f filebeat
 docker compose down -v  # Removes volumes
 docker compose up -d    # Fresh start
 ```
+
+## API Testing & Postman Collection
+
+This project includes a Postman collection that can be used to manually test,
+explore, and understand the API without writing any client code.
+
+The collection is intended for:
+- manual API testing during development
+- exploring request and response structures
+- debugging authentication and business logic
+- demonstrating complete application flows
+
+### Location
+
+The Postman collection is located in the root of the /v2 directory:
+
+    /v2/MobiPark - Full test.postman_collection.json
+
+It can be imported directly into Postman.
+
+### Usage notes
+
+The collection is structured to reflect real application flows.
+Authentication tokens and resource identifiers are automatically stored in
+collection variables using Postman scripts, so most requests can be executed
+in sequence without manual input.
+
+---
+
+## API Endpoint Overview
+
+<table>
+  <thead>
+    <tr>
+      <th>Folder</th>
+      <th>Method</th>
+      <th>Endpoint</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Authentication</td>
+      <td>POST</td>
+      <td><code>/auth/login</code></td>
+      <td>Authenticate user and receive JWT</td>
+    </tr>
+    <tr>
+      <td>Authentication</td>
+      <td>GET</td>
+      <td><code>/auth/me</code></td>
+      <td>Get current authenticated user</td>
+    </tr>
+
+    <tr>
+      <td>Vehicles</td>
+      <td>POST</td>
+      <td><code>/vehicles</code></td>
+      <td>Create a new vehicle</td>
+    </tr>
+    <tr>
+      <td>Vehicles</td>
+      <td>GET</td>
+      <td><code>/vehicles</code></td>
+      <td>List vehicles of current user</td>
+    </tr>
+    <tr>
+      <td>Vehicles</td>
+      <td>GET</td>
+      <td><code>/vehicles/{vehicle_id}</code></td>
+      <td>Get vehicle details</td>
+    </tr>
+    <tr>
+      <td>Vehicles</td>
+      <td>DELETE</td>
+      <td><code>/vehicles/{vehicle_id}</code></td>
+      <td>Delete a vehicle</td>
+    </tr>
+
+    <tr>
+      <td>Parking Lots</td>
+      <td>POST</td>
+      <td><code>/parking-lots</code></td>
+      <td>Create a parking lot (admin only)</td>
+    </tr>
+    <tr>
+      <td>Parking Lots</td>
+      <td>GET</td>
+      <td><code>/parking-lots</code></td>
+      <td>List all parking lots</td>
+    </tr>
+    <tr>
+      <td>Parking Lots</td>
+      <td>GET</td>
+      <td><code>/parking-lots/{lid}</code></td>
+      <td>Get parking lot details</td>
+    </tr>
+    <tr>
+      <td>Parking Lots</td>
+      <td>GET</td>
+      <td><code>/parking-lots/{lid}/sessions</code></td>
+      <td>List sessions for a parking lot</td>
+    </tr>
+
+    <tr>
+      <td>Sessions</td>
+      <td>POST</td>
+      <td><code>/sessions/start</code></td>
+      <td>Start a parking session</td>
+    </tr>
+    <tr>
+      <td>Sessions</td>
+      <td>GET</td>
+      <td><code>/sessions</code></td>
+      <td>List sessions (paginated)</td>
+    </tr>
+    <tr>
+      <td>Sessions</td>
+      <td>GET</td>
+      <td><code>/sessions/{session_id}</code></td>
+      <td>Get session details</td>
+    </tr>
+    <tr>
+      <td>Sessions</td>
+      <td>POST</td>
+      <td><code>/sessions/{session_id}/end</code></td>
+      <td>End a parking session</td>
+    </tr>
+
+    <tr>
+      <td>Payments</td>
+      <td>POST</td>
+      <td><code>/payments</code></td>
+      <td>Create a payment</td>
+    </tr>
+    <tr>
+      <td>Payments</td>
+      <td>GET</td>
+      <td><code>/payments</code></td>
+      <td>List payments of current user</td>
+    </tr>
+
+    <tr>
+      <td>Billing</td>
+      <td>GET</td>
+      <td><code>/billing</code></td>
+      <td>Get billing summary for current user</td>
+    </tr>
+  </tbody>
+</table>
