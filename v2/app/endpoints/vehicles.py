@@ -50,7 +50,7 @@ async def create_vehicle(
     return new_vehicle
 
 
-@router.get("/vehicles", response_model=List[schemas.Vehicle])
+@router.get("/vehicles", response_model=schemas.Page[schemas.Vehicle])
 async def get_vehicles(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
@@ -69,9 +69,9 @@ async def get_vehicles(
     vehicles = result.scalars().all()
 
     log_event(logging.INFO, "/vehicles", 200, "Vehicles listed")
-    return vehicles
+    return schemas.Page(items=vehicles, total=len(vehicles), limit=page.limit, offset=page.offset)
 
-@router.get("/vehicles/{user_id}", response_model=List[schemas.Vehicle])
+@router.get("/vehicles/{user_id}", response_model=schemas.Page[schemas.Vehicle])
 async def get_vehicles_for_user(
     user_id: int,
     db: AsyncSession = Depends(get_db),
@@ -81,6 +81,8 @@ async def get_vehicles_for_user(
 ):
     check_token(token.credentials)
     require_admin(current_user)
+
+    total = (await db.execute(select(func.count()).select_from(models.Vehicle).where(models.Vehicle.user_id == user_id))).scalar_one()
 
     query = (
         select(models.Vehicle)
@@ -92,7 +94,7 @@ async def get_vehicles_for_user(
     vehicles = result.scalars().all()
 
     log_event(logging.INFO, "/vehicles/{user_id}", 200, "Vehicles listed (admin)")
-    return vehicles
+    return schemas.Page(items=vehicles, total=total, limit=page.limit, offset=page.offset)
 
 @router.put("/vehicles/{vehicle_id}", response_model=schemas.Vehicle)
 async def update_vehicle(

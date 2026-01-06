@@ -24,12 +24,12 @@ async def billing_summary_me(
     current_user: models.User = Depends(get_current_user),
 ):
     check_token(token.credentials)
-
+    # Get all sessions for the current user where the vehicle belongs to the user and status is completed
     q = (
         select(models.Session, models.ParkingLot, models.Vehicle)
         .join(models.Vehicle, models.Session.vehicle_id == models.Vehicle.vehicle_id)
         .join(models.ParkingLot, models.Session.parking_lots_id == models.ParkingLot.id)
-        .where(models.Vehicle.user_id == current_user.id)
+        .where(models.Vehicle.user_id == current_user.id and models.Session.status == "completed")
     )
     res = await db.execute(q)
     rows = res.all()
@@ -49,15 +49,15 @@ async def billing_summary_me(
 
     total_amount = round(total_amount, 2)
     total_paid = round(total_paid, 2)
-    balance = round(total_amount - total_paid, 2)
+    amount_still_to_pay  = round(total_amount - total_paid, 2)
     average = round(total_amount / sessions_count, 2) if sessions_count else 0.0
 
     log_event(logging.INFO, "/billing", 200, "Billing summary retrieved")
 
     return schemas.BillingSummary(
         amount=total_amount,
-        payed=total_paid,       # keep legacy spelling
-        balance=balance,
+        payed=total_paid,
+        amount_still_to_pay=amount_still_to_pay,
         sessions=sessions_count,
         average=average,
     )
@@ -70,7 +70,6 @@ async def billing_monthly_me(
     current_user: models.User = Depends(get_current_user),
 ):
     check_token(token.credentials)
-    print(current_user.id)
 
     q = (
         select(
@@ -131,7 +130,7 @@ async def billing_summary_user(
 
     total_amount = round(total_amount, 2)
     total_paid = round(total_paid, 2)
-    balance = round(total_amount - total_paid, 2)
+    amount_still_to_pay  = round(total_amount - total_paid, 2)
     average = round(total_amount / sessions_count, 2) if sessions_count else 0.0
 
     log_event(logging.INFO, "/billing/{uid}", 200, "Billing summary retrieved (admin)")
@@ -139,7 +138,7 @@ async def billing_summary_user(
     return schemas.BillingSummary(
         amount=total_amount,
         payed=total_paid,
-        balance=balance,
+        amount_still_to_pay=amount_still_to_pay,
         sessions=sessions_count,
         average=average,
     )

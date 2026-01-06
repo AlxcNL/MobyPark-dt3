@@ -53,7 +53,6 @@ async def list_parking_lots(p: PageParams = Depends(page_params), db: AsyncSessi
     )
     rows = result.scalars().all()
 
-    # thanks to from_attributes=True you can return ORM rows
     items = rows
     log_event(logging.INFO, "/parking-lots", 200, "Parking lots listed")
     return schemas.Page(items=items, total=total, limit=p.limit, offset=p.offset)
