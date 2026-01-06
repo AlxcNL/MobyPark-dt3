@@ -27,7 +27,7 @@ class LoginRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    expires_in: int = 600
+    expires_in: int = 1800
 
 
 Role = Literal["user", "admin", "USER", "ADMIN"]
@@ -84,7 +84,7 @@ class ParkingLotBase(BaseModel):
 
 
 class CreateParkingLot(ParkingLotBase):
-    business_id: Optional[int]
+    business_id: Optional[int] = None
 
 class UpdateParkingLot(BaseModel):
     name: Optional[str] = None
@@ -201,9 +201,8 @@ class SessionBase(BaseModel):
     status: SessionStatus = "ACTIVE"
 
 class SessionCreate(BaseModel):
-    parking_lots_id: int
-    license_plate: str
-    vehicle_id: Optional[int] = None
+    # license_plate: str
+    vehicle_id: int
 
 class SessionUpdate(BaseModel):
     end_date: Optional[datetime] = None
@@ -246,7 +245,7 @@ class PaymentUpdate(BaseModel):
 
 class Payment(BaseModel):
     id: int
-    amount: int
+    amount: float
     initiator_users_id: int
     created_at: datetime
     completed_at: Optional[datetime] = None
@@ -260,7 +259,7 @@ class Payment(BaseModel):
 class BillingSummary(BaseModel):
     amount: float
     payed: float
-    balance: float
+    amount_still_to_pay: float
     sessions: int
     average: float
 
@@ -269,7 +268,7 @@ class MonthlyBilling(BaseModel):
     month: int
     amount: float
     payed: float
-    balance: float
+    amount_still_to_pay: float
     sessions: int
     average: float
     

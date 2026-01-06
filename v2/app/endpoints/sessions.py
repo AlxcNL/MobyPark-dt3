@@ -17,7 +17,7 @@ router = APIRouter(prefix="/parking-lots/{lid}", tags=["sessions"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 # start a session
-@router.post("/sessions/start", response_model=schemas.MessageWithId, status_code=201)
+@router.post("/sessions/start", response_model=schemas.Session, status_code=201)
 async def create_session(
     session: schemas.SessionCreate,
     lid: int,
@@ -27,28 +27,24 @@ async def create_session(
 ):
     check_token(token.credentials)
 
-    parking_lot_result = await db.execute(
+    parking_lot = (await db.execute(
         select(models.ParkingLot).where(models.ParkingLot.id == lid)
-    )
-    parking_lot = parking_lot_result.scalars().first()
+    )).scalars().first()
+
     if not parking_lot:
-        log_event(logging.WARNING, "/sessions/start", 404, "Parking lot not found")
         raise HTTPException(status_code=404, detail="Parking lot not found")
 
-    vehicle = None
-    if session.vehicle_id:
-        vehicle_result = await db.execute(
-            select(models.Vehicle).where(models.Vehicle.vehicle_id == session.vehicle_id)
-        )
-        vehicle = vehicle_result.scalars().first()
-        if not vehicle:
-            log_event(logging.WARNING, "/sessions/start", 404, "Vehicle not found")
-            raise HTTPException(status_code=404, detail="Vehicle not found")
+    vehicle = (await db.execute(
+        select(models.Vehicle).where(models.Vehicle.vehicle_id == session.vehicle_id)
+    )).scalars().first()
+
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
 
     new_session = models.Session(
-        parking_lots_id=session.parking_lots_id,
-        vehicle_id=session.vehicle_id,
-        license_plate=session.license_plate,
+        parking_lots_id=parking_lot.id,
+        vehicle_id=vehicle.vehicle_id,
+        license_plate=vehicle.license_plate,
         start_date=datetime.now(timezone.utc),
         hourly_rate=parking_lot.tariff,
     )
@@ -57,8 +53,7 @@ async def create_session(
     await db.commit()
     await db.refresh(new_session)
 
-    log_event(logging.INFO, "/sessions/start", 201, "Session started")
-    return {"message": "Session started", "id": new_session.id}
+    return new_session
 
 
 # stop a session
@@ -93,6 +88,7 @@ async def stop_session(
         raise HTTPException(status_code=404, detail="Parking lot not found")
 
     session.end_date = datetime.now(timezone.utc)
+    session.status = "COMPLETED"
     start = session.start_date
     if start.tzinfo is None:
         start = start.replace(tzinfo=timezone.utc)
@@ -109,7 +105,7 @@ async def stop_session(
     return {"message": "Session stopped"}
 
 
-@router.get("/sessions", response_model=List[schemas.Session])
+@router.get("/sessions", response_model=schemas.Page[schemas.Session])
 async def get_sessions(
     lid: int,
     db: AsyncSession = Depends(get_db),
@@ -120,6 +116,13 @@ async def get_sessions(
     check_token(token.credentials)
 
     if current_user.role == "ADMIN":
+        total = (
+            await db.execute(
+                select(func.count())
+                .select_from(models.Session)
+                .where(models.Session.parking_lots_id == lid)
+            )).scalar_one()
+        
         query = (
             select(models.Session)
             .where(models.Session.parking_lots_id == lid)
@@ -131,7 +134,16 @@ async def get_sessions(
             select(models.Vehicle.vehicle_id).where(models.Vehicle.user_id == current_user.id)
         )
         vehicle_ids = [v[0] for v in vehicle_result.all()]
-
+        total = (
+            await db.execute(
+                select(func.count())
+                .select_from(models.Session)
+                .where(
+                    models.Session.parking_lots_id == lid,
+                    models.Session.vehicle_id.in_(vehicle_ids),
+                )
+            )).scalar_one()
+        
         query = (
             select(models.Session)
             .where(
@@ -146,7 +158,7 @@ async def get_sessions(
     sessions = result.scalars().all()
 
     log_event(logging.INFO, "/sessions", 200, "Sessions listed")
-    return sessions
+    return schemas.Page(items=sessions, total=total, limit=page.limit, offset=page.offset)
 
 
 # get specific session

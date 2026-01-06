@@ -99,7 +99,7 @@ async def complete_payment(
 
 
 # list payments of current user
-@router.get("/payments", response_model=List[schemas.Payment])
+@router.get("/payments", response_model=schemas.Page[schemas.Payment])
 async def list_payments(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
@@ -107,6 +107,10 @@ async def list_payments(
     params: PageParams = Depends(page_params),
 ):
     check_token(token.credentials)
+
+    total = (await db.execute(
+        select(func.count()).select_from(models.Payment).where(models.Payment.initiator_users_id == current_user.id)
+    )).scalar_one()
 
     result = await db.execute(
         select(models.Payment)
@@ -117,7 +121,7 @@ async def list_payments(
     payments = result.scalars().all()
 
     log_event(logging.INFO, "/payments", 200, "Payments listed")
-    return payments
+    return schemas.Page(items=payments, total=total, limit=params.limit, offset=params.offset)
 
 
 # get payment by user id (admin)
