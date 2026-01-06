@@ -30,7 +30,7 @@ class TokenResponse(BaseModel):
     expires_in: int = 600
 
 
-Role = Literal["user", "admin"]
+Role = Literal["user", "admin", "USER", "ADMIN"]
 
 class UserBase(BaseModel):
     username: str
@@ -60,9 +60,9 @@ class User(BaseModel):
     username: str
     email: str
     role: Role
-    name: Optional[str] = None
+    name: str
     phone: Optional[str] = None
-    birth_year: Optional[int] = None
+    birth_year: int
     active: int
     created_at: datetime
     business_id: Optional[int]
@@ -122,10 +122,10 @@ class ParkingLotDetails(BaseModel):
 
 class VehicleBase(BaseModel):
     license_plate: str
-    make: Optional[str] = None
+    vehicle_name: Optional[str] = None
+    brand: Optional[str] = None
     model: Optional[str] = None
     color: Optional[str] = None
-    year: Optional[int] = Field(default=None, ge=1900)
 
 
 class VehicleCreate(VehicleBase):
@@ -133,20 +133,20 @@ class VehicleCreate(VehicleBase):
 
 class VehicleUpdate(VehicleBase):
     license_plate: Optional[str] = None
-    make: Optional[str] = None
+    vehicle_name: Optional[str] = None
+    brand: Optional[str] = None
     model: Optional[str] = None
     color: Optional[str] = None
-    year: Optional[int] = Field(default=None, ge=1900)
 
 class Vehicle(BaseModel):
-    id: int
-    users_id: int
+    vehicle_id: int
+    user_id: int
     license_plate: str
-    license_plate_clean: str
-    make: Optional[str] = None
+    vehicle_name: Optional[str] = None
+    brand: Optional[str] = None
     model: Optional[str] = None
     color: Optional[str] = None
-    year: Optional[int] = None
+    is_active: int
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -157,10 +157,10 @@ ReservationStatus = Literal["confirmed", "completed", "canceled"]
 class ReservationBase(BaseModel):
     vehicles_id: int
     parking_lots_id: int
-    start_time: datetime
-    end_time: Optional[datetime] = None
+    start_time: str
+    end_time: Optional[str] = None
     status: ReservationStatus = "confirmed"
-    cost: Optional[float] = Field(default=None, ge=0)
+    cost: Optional[float] = Field(default=0.0, ge=0)
 
 
 class ReservationCreate(ReservationBase):
@@ -168,55 +168,61 @@ class ReservationCreate(ReservationBase):
 
 
 class ReservationUpdate(BaseModel):
-    vehicles_id: Optional[int] = None
-    parking_lots_id: Optional[int] = None
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
+    vehicles_id: Optional[int] = Field(default=None, ge=1)
+    parking_lots_id: Optional[int] = Field(default=None, ge=1)
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
     status: Optional[ReservationStatus] = None
-    cost: Optional[conint(ge=0)] = None
+    cost: Optional[float] = Field(default=None, ge=0)
 
 class Reservation(BaseModel):
     id: int
     vehicles_id: int
     parking_lots_id: int
-    start_time: datetime
-    end_time: Optional[datetime] = None
+    start_time: str
+    end_time: Optional[str] = None
     status: ReservationStatus
-    created_at: datetime
-    cost: int
+    created_at: str
+    cost: float
 
     model_config = ConfigDict(from_attributes=True)
 
-PaymentStatus = Literal["pending", "completed"]
+SessionStatus = Literal["ACTIVE", "COMPLETED", "CANCELLED"]
 
 class SessionBase(BaseModel):
     parking_lots_id: int
-    vehicles_id: int
+    vehicle_id: Optional[int] = None
+    license_plate: str
     start_date: datetime
-    stop_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     duration_minutes: Optional[int] = Field(default=0, ge=0)
-    cost: Optional[int] = Field(default=0, ge=0)
-    payment_status: PaymentStatus = "pending"
+    hourly_rate: Optional[float] = Field(default=0.0, ge=0)
+    calculated_amount: Optional[float] = Field(default=0.0, ge=0)
+    status: SessionStatus = "ACTIVE"
 
 class SessionCreate(BaseModel):
     parking_lots_id: int
-    vehicles_id: int
+    license_plate: str
+    vehicle_id: Optional[int] = None
 
 class SessionUpdate(BaseModel):
-    stop_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     duration_minutes: Optional[int] = Field(default=None, ge=0)
-    cost: Optional[int] = Field(default=None, ge=0)
-    payment_status: Optional[PaymentStatus] = None
+    calculated_amount: Optional[float] = Field(default=None, ge=0)
+    status: Optional[SessionStatus] = None
 
 class Session(BaseModel):
     id: int
     parking_lots_id: int
-    vehicles_id: int
+    vehicle_id: Optional[int] = None
+    license_plate: str
     start_date: datetime
-    stop_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     duration_minutes: Optional[int] = None
-    cost: int
-    payment_status: PaymentStatus
+    hourly_rate: float
+    calculated_amount: float
+    status: SessionStatus
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 

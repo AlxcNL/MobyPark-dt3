@@ -26,8 +26,8 @@ async def create_reservation(
 
     result = await db.execute(
         select(models.Vehicle).where(
-            models.Vehicle.id == reservation.vehicles_id,
-            models.Vehicle.users_id == current_user.id,
+            models.Vehicle.vehicle_id == reservation.vehicles_id,
+            models.Vehicle.user_id == current_user.id,
         )
     )
     vehicle = result.scalar_one_or_none()

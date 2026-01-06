@@ -27,9 +27,9 @@ async def billing_summary_me(
 
     q = (
         select(models.Session, models.ParkingLot, models.Vehicle)
-        .join(models.Vehicle, models.Session.vehicles_id == models.Vehicle.id)
+        .join(models.Vehicle, models.Session.vehicle_id == models.Vehicle.vehicle_id)
         .join(models.ParkingLot, models.Session.parking_lots_id == models.ParkingLot.id)
-        .where(models.Vehicle.users_id == current_user.id)
+        .where(models.Vehicle.user_id == current_user.id)
     )
     res = await db.execute(q)
     rows = res.all()
@@ -39,7 +39,7 @@ async def billing_summary_me(
     sessions_count = 0
 
     for s, lot, veh in rows:
-        amount_eur, _hours, _days = calculate_price(lot, s.start_date, s.stop_date)
+        amount_eur, _hours, _days = calculate_price(lot, s.start_date, s.end_date)
         thash = tr_hash(s.id, veh.license_plate)
         paid_eur = await sum_paid_eur(db, s.id, thash)
 
@@ -76,10 +76,10 @@ async def billing_monthly_me(
         select(
             func.strftime("%Y-%m", models.Session.start_date).label("month"),
             func.count(models.Session.id).label("sessions"),
-            func.sum(models.Session.cost).label("total_cost_cents"),
+            func.sum(models.Session.calculated_amount).label("total_cost"),
         )
-        .join(models.Vehicle, models.Session.vehicles_id == models.Vehicle.id)
-        .where(models.Vehicle.users_id == current_user.id)
+        .join(models.Vehicle, models.Session.vehicle_id == models.Vehicle.vehicle_id)
+        .where(models.Vehicle.user_id == current_user.id)
         .group_by("month")
         .order_by("month")
     )
@@ -90,9 +90,9 @@ async def billing_monthly_me(
         {
             "month": month,
             "sessions": sessions,
-            "total_cost": round((total_cost_cents or 0) / 100.0, 2),
+            "total_cost": round(total_cost or 0, 2),
         }
-        for month, sessions, total_cost_cents in res.all()
+        for month, sessions, total_cost in res.all()
     ]
 
 
@@ -109,9 +109,9 @@ async def billing_summary_user(
 
     q = (
         select(models.Session, models.ParkingLot, models.Vehicle)
-        .join(models.Vehicle, models.Session.vehicles_id == models.Vehicle.id)
+        .join(models.Vehicle, models.Session.vehicle_id == models.Vehicle.vehicle_id)
         .join(models.ParkingLot, models.Session.parking_lots_id == models.ParkingLot.id)
-        .where(models.Vehicle.users_id == uid)
+        .where(models.Vehicle.user_id == uid)
     )
     res = await db.execute(q)
     rows = res.all()
@@ -121,7 +121,7 @@ async def billing_summary_user(
     sessions_count = 0
 
     for s, lot, veh in rows:
-        amount_eur, _hours, _days = calculate_price(lot, s.start_date, s.stop_date)
+        amount_eur, _hours, _days = calculate_price(lot, s.start_date, s.end_date)
         thash = tr_hash(s.id, veh.license_plate)
         paid_eur = await sum_paid_eur(db, s.id, thash)
 
