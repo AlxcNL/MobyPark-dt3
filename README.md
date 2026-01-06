@@ -460,16 +460,10 @@ docker compose down -v  # Removes volumes
 docker compose up -d    # Fresh start
 ```
 
-## API Testing & Postman Collection
+## Postman Collection
 
-This project includes a Postman collection that can be used to manually test,
-explore, and understand the API without writing any client code.
-
-The collection is intended for:
-- manual API testing during development
-- exploring request and response structures
-- debugging authentication and business logic
-- demonstrating complete application flows
+This project includes a Postman collection that can be used to manually test
+and explore the API without writing any client code.
 
 ### Location
 
@@ -477,135 +471,71 @@ The Postman collection is located in the root of the /v2 directory:
 
     /v2/MobiPark - Full test.postman_collection.json
 
-It can be imported directly into Postman.
+You can import this file directly into Postman.
 
-### Usage notes
+### Importing the collection
 
-The collection is structured to reflect real application flows.
-Authentication tokens and resource identifiers are automatically stored in
-collection variables using Postman scripts, so most requests can be executed
-in sequence without manual input.
+1. Open Postman
+2. Click "Import"
+3. Select "File"
+4. Choose: MobiPark - Full test.postman_collection.json
+5. The collection will appear in your Postman sidebar
 
----
+### Authentication
 
-## API Endpoint Overview
+Most endpoints in the collection require authentication.
 
-<table>
-  <thead>
-    <tr>
-      <th>Folder</th>
-      <th>Method</th>
-      <th>Endpoint</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Authentication</td>
-      <td>POST</td>
-      <td><code>/auth/login</code></td>
-      <td>Authenticate user and receive JWT</td>
-    </tr>
-    <tr>
-      <td>Authentication</td>
-      <td>GET</td>
-      <td><code>/auth/me</code></td>
-      <td>Get current authenticated user</td>
-    </tr>
+The typical flow is:
 
-    <tr>
-      <td>Vehicles</td>
-      <td>POST</td>
-      <td><code>/vehicles</code></td>
-      <td>Create a new vehicle</td>
-    </tr>
-    <tr>
-      <td>Vehicles</td>
-      <td>GET</td>
-      <td><code>/vehicles</code></td>
-      <td>List vehicles of current user</td>
-    </tr>
-    <tr>
-      <td>Vehicles</td>
-      <td>GET</td>
-      <td><code>/vehicles/{vehicle_id}</code></td>
-      <td>Get vehicle details</td>
-    </tr>
-    <tr>
-      <td>Vehicles</td>
-      <td>DELETE</td>
-      <td><code>/vehicles/{vehicle_id}</code></td>
-      <td>Delete a vehicle</td>
-    </tr>
+1. Send the login/authentication request
+2. The API returns a JWT access token
+3. A Postman post-request script automatically stores the token as a
+   collection variable
+4. All subsequent requests automatically include the token as a Bearer token
+   in the Authorization header
 
-    <tr>
-      <td>Parking Lots</td>
-      <td>POST</td>
-      <td><code>/parking-lots</code></td>
-      <td>Create a parking lot (admin only)</td>
-    </tr>
-    <tr>
-      <td>Parking Lots</td>
-      <td>GET</td>
-      <td><code>/parking-lots</code></td>
-      <td>List all parking lots</td>
-    </tr>
-    <tr>
-      <td>Parking Lots</td>
-      <td>GET</td>
-      <td><code>/parking-lots/{lid}</code></td>
-      <td>Get parking lot details</td>
-    </tr>
-    <tr>
-      <td>Parking Lots</td>
-      <td>GET</td>
-      <td><code>/parking-lots/{lid}/sessions</code></td>
-      <td>List sessions for a parking lot</td>
-    </tr>
+No manual copying of tokens is required.
 
-    <tr>
-      <td>Sessions</td>
-      <td>POST</td>
-      <td><code>/sessions/start</code></td>
-      <td>Start a parking session</td>
-    </tr>
-    <tr>
-      <td>Sessions</td>
-      <td>GET</td>
-      <td><code>/sessions</code></td>
-      <td>List sessions (paginated)</td>
-    </tr>
-    <tr>
-      <td>Sessions</td>
-      <td>GET</td>
-      <td><code>/sessions/{session_id}</code></td>
-      <td>Get session details</td>
-    </tr>
-    <tr>
-      <td>Sessions</td>
-      <td>POST</td>
-      <td><code>/sessions/{session_id}/end</code></td>
-      <td>End a parking session</td>
-    </tr>
+### Collection variables
 
-    <tr>
-      <td>Payments</td>
-      <td>POST</td>
-      <td><code>/payments</code></td>
-      <td>Create a payment</td>
-    </tr>
-    <tr>
-      <td>Payments</td>
-      <td>GET</td>
-      <td><code>/payments</code></td>
-      <td>List payments of current user</td>
-    </tr>
+The collection uses Postman collection variables to keep requests connected.
 
-    <tr>
-      <td>Billing</td>
-      <td>GET</td>
-      <td><code>/billing</code></td>
-      <td>Get billing summary for current user</td>
-    </tr>
-  </tbody>
-</table>
+Examples of variables that are set automatically:
+
+- access_token
+- vehicle_id
+- session_id
+- payment_id
+
+These variables are populated by post-request scripts and reused in later
+requests. This allows you to create a resource in one request and
+automatically reference it in the next.
+
+You can view or inspect these values via:
+
+    Collection → Variables
+
+### Structure and usage
+
+The collection is organized to reflect real application flows, such as:
+
+- Authentication and users
+- Vehicles
+- Parking lots
+- Sessions (start, list, end)
+- Payments
+- Billing and summaries
+
+Some requests depend on data created by earlier requests, so it is recommended
+to execute requests within a folder from top to bottom.
+
+### Purpose
+
+The Postman collection is intended for:
+
+- Manual API testing
+- Exploring request and response structures
+- Debugging during development
+- Demonstrating API behavior
+
+It is not intended to replace automated tests, but to complement them.
