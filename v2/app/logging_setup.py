@@ -1,6 +1,6 @@
 import json
 import logging
-import os
+from os import makedirs
 from datetime import date, datetime, timezone
 
 LOG_DIR = "app/logs"
@@ -25,7 +25,7 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(data, ensure_ascii=False)
 
 def setup_logging(log_level):
-    os.makedirs(LOG_DIR, exist_ok=True)
+    makedirs(LOG_DIR, exist_ok=True)
 
     today = date.today().isoformat()
     logfile = f"{LOG_DIR}/mobipark_api_{today}.log"
