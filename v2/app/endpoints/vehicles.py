@@ -24,10 +24,10 @@ async def create_vehicle(
 ):
     check_token(token.credentials)
 
-        #check if clean license plate already exists
+    # Check if license plate already exists
     result = await db.execute(
         select(models.Vehicle).where(
-            models.Vehicle.license_plate_clean == licenceplate_clean(vehicle.license_plate)
+            models.Vehicle.license_plate == vehicle.license_plate
         )
     )
     existing_vehicle = result.scalar_one_or_none()
@@ -35,13 +35,12 @@ async def create_vehicle(
         raise HTTPException(status_code=400, detail="Vehicle with this license plate already exists")
 
     new_vehicle = models.Vehicle(
-        users_id=current_user.id,
+        user_id=current_user.id,
         license_plate=vehicle.license_plate,
-        license_plate_clean=licenceplate_clean(vehicle.license_plate),
-        make=vehicle.make,
+        vehicle_name=vehicle.vehicle_name,
+        brand=vehicle.brand,
         model=vehicle.model,
-        color=vehicle.color,
-        year=vehicle.year
+        color=vehicle.color
     )
 
     db.add(new_vehicle)
@@ -51,7 +50,7 @@ async def create_vehicle(
     return new_vehicle
 
 
-@router.get("/vehicles", response_model=List[schemas.Vehicle])
+@router.get("/vehicles", response_model=schemas.Page[schemas.Vehicle])
 async def get_vehicles(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
@@ -62,7 +61,7 @@ async def get_vehicles(
 
     query = (
         select(models.Vehicle)
-        .where(models.Vehicle.users_id == current_user.id)
+        .where(models.Vehicle.user_id == current_user.id)
         .offset(page.offset)
         .limit(page.limit)
     )
@@ -70,9 +69,9 @@ async def get_vehicles(
     vehicles = result.scalars().all()
 
     log_event(logging.INFO, "/vehicles", 200, "Vehicles listed")
-    return vehicles
+    return schemas.Page(items=vehicles, total=len(vehicles), limit=page.limit, offset=page.offset)
 
-@router.get("/vehicles/{user_id}", response_model=List[schemas.Vehicle])
+@router.get("/vehicles/{user_id}", response_model=schemas.Page[schemas.Vehicle])
 async def get_vehicles_for_user(
     user_id: int,
     db: AsyncSession = Depends(get_db),
@@ -83,9 +82,11 @@ async def get_vehicles_for_user(
     check_token(token.credentials)
     require_admin(current_user)
 
+    total = (await db.execute(select(func.count()).select_from(models.Vehicle).where(models.Vehicle.user_id == user_id))).scalar_one()
+
     query = (
         select(models.Vehicle)
-        .where(models.Vehicle.users_id == user_id)
+        .where(models.Vehicle.user_id == user_id)
         .offset(page.offset)
         .limit(page.limit)
     )
@@ -93,7 +94,7 @@ async def get_vehicles_for_user(
     vehicles = result.scalars().all()
 
     log_event(logging.INFO, "/vehicles/{user_id}", 200, "Vehicles listed (admin)")
-    return vehicles
+    return schemas.Page(items=vehicles, total=total, limit=page.limit, offset=page.offset)
 
 @router.put("/vehicles/{vehicle_id}", response_model=schemas.Vehicle)
 async def update_vehicle(
@@ -107,8 +108,8 @@ async def update_vehicle(
 
     result = await db.execute(
         select(models.Vehicle).where(
-            models.Vehicle.id == vehicle_id,
-            models.Vehicle.users_id == current_user.id,
+            models.Vehicle.vehicle_id == vehicle_id,
+            models.Vehicle.user_id == current_user.id,
         )
     )
     vehicle = result.scalar_one_or_none()
@@ -119,15 +120,14 @@ async def update_vehicle(
 
     if vehicle_update.license_plate is not None:
         vehicle.license_plate = vehicle_update.license_plate
-        vehicle.license_plate_clean = licenceplate_clean(vehicle_update.license_plate)
-    if vehicle_update.make is not None:
-        vehicle.make = vehicle_update.make
+    if vehicle_update.vehicle_name is not None:
+        vehicle.vehicle_name = vehicle_update.vehicle_name
+    if vehicle_update.brand is not None:
+        vehicle.brand = vehicle_update.brand
     if vehicle_update.model is not None:
         vehicle.model = vehicle_update.model
     if vehicle_update.color is not None:
         vehicle.color = vehicle_update.color
-    if vehicle_update.year is not None:
-        vehicle.year = vehicle_update.year
 
     db.add(vehicle)
     await db.commit()
@@ -148,8 +148,8 @@ async def delete_vehicle(
 
     result = await db.execute(
         select(models.Vehicle).where(
-            models.Vehicle.id == vehicle_id,
-            models.Vehicle.users_id == current_user.id,
+            models.Vehicle.vehicle_id == vehicle_id,
+            models.Vehicle.user_id == current_user.id,
         )
     )
     vehicle = result.scalar_one_or_none()

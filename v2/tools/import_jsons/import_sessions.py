@@ -13,18 +13,18 @@ def run(conn: sqlite3.Connection):
     sessions = list(data_obj.values())
 
     def _lot_exists(lot_id: int) -> bool:
-        cur.execute("SELECT 1 FROM parking_lots WHERE lot_id = ? LIMIT 1", (lot_id,))
+        cur.execute("SELECT 1 FROM parking_lots WHERE id = ? LIMIT 1", (lot_id,))
         return cur.fetchone() is not None
 
     def _get_lot_rate(lot_id: int) -> float:
-        cur.execute("SELECT hourly_rate FROM parking_lots WHERE lot_id = ? LIMIT 1", (lot_id,))
+        cur.execute("SELECT tariff FROM parking_lots WHERE id = ? LIMIT 1", (lot_id,))
         row = cur.fetchone()
         return row[0] if row else 0.0
 
     def _user_id_by_username(username: str | None):
         if not username:
             return None
-        cur.execute("SELECT user_id FROM users WHERE username = ? LIMIT 1", (username,))
+        cur.execute("SELECT id FROM users WHERE username = ? LIMIT 1", (username,))
         row = cur.fetchone()
         return row[0] if row else None
 
@@ -59,10 +59,10 @@ def run(conn: sqlite3.Connection):
         return cur.lastrowid
 
     sql = """
-        INSERT OR REPLACE INTO parking_sessions
-            (session_id, user_id, lot_id, vehicle_id, license_plate, start_time, end_time,
+        INSERT OR REPLACE INTO sessions
+            (id, parking_lots_id, vehicle_id, license_plate, start_date, end_date,
              duration_minutes, hourly_rate, calculated_amount, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     inserted = skipped = created_vehicles = 0
@@ -73,7 +73,7 @@ def run(conn: sqlite3.Connection):
 
         if not lot_id or not _lot_exists(lot_id):
             skipped += 1
-            print(f"[sessions] skip id={sid} (missing parking_lots.lot_id={lot_id})")
+            print(f"[sessions] skip id={sid} (missing parking_lots.id={lot_id})")
             continue
 
         veh_id = _vehicle_id_by_plate(plate)
@@ -108,7 +108,6 @@ def run(conn: sqlite3.Connection):
 
         cur.execute(sql, (
             sid,
-            user_id,
             lot_id,
             veh_id,
             vehicle_plate,

@@ -25,10 +25,10 @@ MAX_LIMIT = 200
 bearer_scheme = HTTPBearer(auto_error=True)
 
 async def get_current_user(
+    # Geauthenticeerde gebruiker ophalen
     creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: AsyncSession = Depends(get_db),
 ):
-    print(creds)
     user_id = check_token(creds.credentials)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -41,16 +41,17 @@ class PageParams(BaseModel):
     offset: int
 
 def page_params(
+    # Pagination parameters
     limit: int = Query(DEFAULT_LIMIT, ge=1, le=MAX_LIMIT),
     offset: int = Query(0, ge=0),
 ) -> PageParams:
     return PageParams(limit=limit, offset=offset)
 
 def calculate_price(parking_lot: ParkingLot, start: datetime, stop: Optional[datetime] = None):
+    # bereken prijs op basis van tarief en tijdsduur
     if stop is None:
         stop = datetime.now(timezone.utc)
 
-    # ensure both aware UTC
     if start.tzinfo is None:
         start = start.replace(tzinfo=timezone.utc)
     else:
@@ -63,7 +64,7 @@ def calculate_price(parking_lot: ParkingLot, start: datetime, stop: Optional[dat
 
     if parking_lot.tariff < 0 or parking_lot.daytariff < 0:
         raise ValueError("Negative value is not possible")
-    # coerce tariffs
+    
     t = float(parking_lot.tariff) if parking_lot.tariff is not None else 0.0
     dtf = float(parking_lot.daytariff) if parking_lot.daytariff is not None else 999.0
 
@@ -80,39 +81,39 @@ def calculate_price(parking_lot: ParkingLot, start: datetime, stop: Optional[dat
     return (round(price, 2), hours, days)
 
 def generate_payment_hash(sid, vehicle: VehicleBase):
+    # genereer unieke id voor betaling
     return md5(str(sid + vehicle.license_plate).encode("utf-8")).hexdigest()
 
 def generate_transaction_validation_hash():
+    # genereer unieke id voor transactie validatie
     return str(uuid.uuid4())
 
 def tr_hash(session_id: int, license_plate: str) -> str:
-    # match legacy transaction key (md5 of sid + licenseplate)
+    # genereer hash voor transactie validatie
     base = f"{session_id}{license_plate}"
     return md5(base.encode("utf-8")).hexdigest()
 
 async def sum_paid_eur(db: AsyncSession, session_id: int, thash: str) -> float:
-    # Prefer summing by session_id (new schema). If 0, fall back to legacy 'hash' column.
     res = await db.execute(
-        select(func.coalesce(func.sum(Payment.amount), 0)).where(
-            Payment.sessions_id == session_id
-        )
+        select(func.coalesce(func.sum(Payment.amount), 0))
+        .where(Payment.sessions_id == session_id)
     )
-    cents = res.scalar_one() or 0
-    if cents:
-        return round(cents / 100.0, 2)
+    amount = res.scalar_one() or 0.0
+
+    if amount:
+        return round(float(amount), 2)
 
     res = await db.execute(
-        select(func.coalesce(func.sum(Payment.amount), 0)).where(
-            Payment.hash == thash
-        )
+        select(func.coalesce(func.sum(Payment.amount), 0))
+        .where(Payment.hash == thash)
     )
-    cents = res.scalar_one() or 0
-    return round(cents / 100.0, 2)
+    amount = res.scalar_one() or 0.0
+    return round(float(amount), 2)
+
 
 def licenceplate_clean(license_plate: str) -> str:
-    """Clean license plate by removing spaces, dashes and converting to uppercase."""
+    # Verwijder spaties en streepjes, zet om naar hoofdletters
     if not license_plate:
         return ""
-    # Remove spaces, dashes, and other common separators, convert to uppercase
     cleaned = re.sub(r'[\s\-]', '', license_plate).upper()
     return cleaned

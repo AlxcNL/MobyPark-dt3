@@ -12,8 +12,8 @@ def run(conn: sqlite3.Connection):
 
     sql = """
         INSERT OR REPLACE INTO users
-            (user_id, username, email, password_hash, full_name, role, is_active, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (id, username, email, password_hash, name, phone, birth_year, role, active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     for u in users:
@@ -23,6 +23,8 @@ def run(conn: sqlite3.Connection):
             u["email"],
             u["password"],
             u["name"],
+            u.get("phone"),
+            u.get("birth_year", 1990),
             u["role"].upper(),
             1 if u.get("active", True) else 0,
             u.get("created_at"),

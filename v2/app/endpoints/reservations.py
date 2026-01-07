@@ -26,8 +26,8 @@ async def create_reservation(
 
     result = await db.execute(
         select(models.Vehicle).where(
-            models.Vehicle.id == reservation.vehicles_id,
-            models.Vehicle.users_id == current_user.id,
+            models.Vehicle.vehicle_id == reservation.vehicles_id,
+            models.Vehicle.user_id == current_user.id,
         )
     )
     vehicle = result.scalar_one_or_none()
@@ -54,21 +54,27 @@ async def create_reservation(
     log_event(logging.INFO, "/reservations", 201, "Reservation created")
     return new_reservation
 
-
-@router.get("/reservations", response_model=List[schemas.Reservation])
+#resetvations of current user
+@router.get("/reservations", response_model=schemas.Page[schemas.Reservation])
 async def get_reservations(
     db: AsyncSession = Depends(get_db),
     page: PageParams = Depends(page_params),
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    current_user: models.User = Depends(get_current_user)
 ):
     check_token(token.credentials)
-
-    query = select(models.Reservation).offset(page.offset).limit(page.limit)
+    total = (await db.execute(
+        select(func.count())
+        .select_from(models.Reservation)
+        .join(models.Vehicle)
+        .where(models.Vehicle.user_id == current_user.id)
+    )).scalar_one()
+    query = select(models.Reservation).join(models.Vehicle).where(models.Vehicle.user_id == current_user.id).offset(page.offset).limit(page.limit)
     result = await db.execute(query)
     reservations = result.scalars().all()
 
     log_event(logging.INFO, "/reservations", 200, "Reservations listed")
-    return reservations
+    return schemas.Page(items=reservations, total=total, limit=page.limit, offset=page.offset)
 
 
 @router.get("/reservations/{reservation_id}", response_model=schemas.Reservation)
@@ -78,7 +84,6 @@ async def get_reservation(
     token: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     check_token(token.credentials)
-
     result = await db.execute(
         select(models.Reservation).where(models.Reservation.id == reservation_id)
     )
