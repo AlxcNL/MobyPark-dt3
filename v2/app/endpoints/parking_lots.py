@@ -24,18 +24,19 @@ async def create_parking_lot(
 ):
     require_admin(current_user)
 
-    # Use provided business_id or fallback to user's business
-    business_id = lot.business_id or current_user.business_id
+    # Use ONLY the provided business_id (it is optional)
+    business_id = lot.business_id
 
-    if not business_id:
-        raise HTTPException(status_code=400, detail="Business ID is required")
+    # If a business_id was provided, validate that it exists
+    if business_id is not None:
+        result = await db.execute(
+            select(models.Business).where(models.Business.id == business_id)
+        )
+        business = result.scalar_one_or_none()
+        if not business:
+            raise HTTPException(status_code=404, detail="Business not found")
 
-    # Optional: verify the business exists
-    result = await db.execute(select(models.Business).where(models.Business.id == business_id))
-    business = result.scalar_one_or_none()
-    if not business:
-        raise HTTPException(status_code=404, detail="Business not found")
-
+    # Create the parking lot (business_id may be NULL)
     new_lot = models.ParkingLot(
         name=lot.name,
         location=lot.location,
@@ -46,7 +47,7 @@ async def create_parking_lot(
         daytariff=lot.daytariff,
         latitude=lot.latitude,
         longitude=lot.longitude,
-        business_id=business_id,   # ← this was missing
+        business_id=business_id,
     )
 
     db.add(new_lot)

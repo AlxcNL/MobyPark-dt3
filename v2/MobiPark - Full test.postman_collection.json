@@ -559,7 +559,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Scheepshavenkade\",\r\n    \"location\": \"Rotterdam\",\r\n    \"address\": \"Zeemanstraat\",\r\n    \"capacity\": 100,\r\n    \"reserved\": 13,\r\n    \"tariff\": 12.50,\r\n    \"daytariff\": 22.00,\r\n    \"latitude\": 52.1133,\r\n    \"longitude\": 4.2234\r\n}",
+							"raw": "{\r\n    \"name\": \"Scheepshavenkade\",\r\n    \"location\": \"Rotterdam\",\r\n    \"address\": \"Zeemanstraat\",\r\n    \"capacity\": 100,\r\n    \"reserved\": 13,\r\n    \"tariff\": 12.50,\r\n    \"daytariff\": 22.00,\r\n    \"latitude\": 52.1133,\r\n    \"longitude\": 4.2234,\r\n    \"business_id\": {{business_id}}\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
