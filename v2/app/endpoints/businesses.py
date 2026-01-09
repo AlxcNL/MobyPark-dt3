@@ -97,7 +97,7 @@ async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = 
     )
     new_user = result.scalar_one_or_none()
     if not new_user:
-        logging.error("Business ID does not exist when adding user or user could not be added")
+        logging.error("Business ID does not exist when adding user or user could not be added ")
         raise HTTPException(status_code=404, detail="Something went wrong when adding the business")
 
     return new_business
