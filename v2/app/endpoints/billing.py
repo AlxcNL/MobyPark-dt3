@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
