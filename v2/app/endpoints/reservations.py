@@ -12,7 +12,7 @@ from app.dependencies import get_current_user, page_params, PageParams
 
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="", tags=["reservations"])
+router = APIRouter(prefix="/v2", tags=["reservations"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 @router.post("/reservations", response_model=schemas.Reservation, status_code=201)

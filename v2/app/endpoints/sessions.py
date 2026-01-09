@@ -13,7 +13,7 @@ from app.dependencies import get_current_user, page_params, PageParams, calculat
 from datetime import datetime, timezone
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="/parking-lots/{lid}", tags=["sessions"])
+router = APIRouter(prefix="/v2/parking-lots/{lid}", tags=["sessions"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 # start a session

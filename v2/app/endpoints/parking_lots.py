@@ -12,12 +12,29 @@ from app.dependencies import get_current_user, page_params, PageParams
 
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="", tags=["parking_lots"])
+router = APIRouter(prefix="/v2", tags=["parking_lots"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 @router.post("/parking-lots", response_model=schemas.ParkingLotDetails)
-async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme), current_user: models.User = Depends(get_current_user)):
+async def create_parking_lot(
+    lot: schemas.CreateParkingLot,
+    db: AsyncSession = Depends(get_db),
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    current_user: models.User = Depends(get_current_user),
+):
     require_admin(current_user)
+
+    # Use provided business_id or fallback to user's business
+    business_id = lot.business_id or current_user.business_id
+
+    if not business_id:
+        raise HTTPException(status_code=400, detail="Business ID is required")
+
+    # Optional: verify the business exists
+    result = await db.execute(select(models.Business).where(models.Business.id == business_id))
+    business = result.scalar_one_or_none()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
 
     new_lot = models.ParkingLot(
         name=lot.name,
@@ -28,14 +45,17 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
         tariff=lot.tariff,
         daytariff=lot.daytariff,
         latitude=lot.latitude,
-        longitude=lot.longitude
+        longitude=lot.longitude,
+        business_id=business_id,   # ← this was missing
     )
+
     db.add(new_lot)
     await db.commit()
     await db.refresh(new_lot)
 
     log_event(logging.INFO, "/parking-lots", 201, "Parking lot created")
     return new_lot
+
 
 @router.get("/parking-lots", response_model=schemas.Page[schemas.ParkingLot])
 async def list_parking_lots(p: PageParams = Depends(page_params), db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):

@@ -7,6 +7,211 @@
 	},
 	"item": [
 		{
+			"name": "Business",
+			"item": [
+				{
+					"name": "/businesses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.id) {\r",
+									"    pm.collectionVariables.set(\"business_id\", response.id);\r",
+									"}\r",
+									"\r",
+									"if (response.address) {\r",
+									"    pm.collectionVariables.set(\"business_address\", response.address);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"business_name\": \"ERTU BV\",\r\n  \"address\": \"Parkweg 100, Schiedam\",\r\n  \"username\": \"ertu_bv\",\r\n  \"email\": \"ertu@bv.nl\",\r\n  \"password\": \"SuperSecret123!\",\r\n  \"name\": \"Ertu Kara\",\r\n  \"phone\": \"+31612345678\",\r\n  \"birth_year\": 2000,\r\n  \"role\": \"ADMIN\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/businesses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/businesses/{business_id}",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses/{{business_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses",
+								"{{business_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/login business",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the JSON response\r",
+									"let response = pm.response.json();\r",
+									"\r",
+									"// Save access_token to collection variables\r",
+									"if (response.access_token) {\r",
+									"    pm.collectionVariables.set(\"access_token\", response.access_token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"ertu_bv\",\r\n    \"password\": \"SuperSecret123!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/businesses",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.code === 200) {\r",
+									"    const response = pm.response.json();\r",
+									"    const originalBusinessAddress = pm.collectionVariables.get(\"business_address\");\r",
+									"\r",
+									"    pm.test(\"business_address was updated\", function () {\r",
+									"        pm.expect(response.address).to.not.eql(originalBusinessAddress);\r",
+									"    });\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"name\": \"ERTU BV\",\r\n   \"address\": \"Parkweg 110, Rotterdam\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Auth",
 			"item": [
 				{
@@ -74,13 +279,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/register",
+							"raw": "http://localhost:8000/v2/register",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"register"
 							]
 						}
@@ -124,7 +330,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"ertu\",\r\n    \"password\": \"test123\"\r\n}",
+							"raw": "{\r\n    \"username\": \"ertu_bv\",\r\n    \"password\": \"SuperSecret123!\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -132,13 +338,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/login",
+							"raw": "http://localhost:8000/v2/login",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"login"
 							]
 						}
@@ -185,13 +392,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/profile",
+							"raw": "http://localhost:8000/v2/profile",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"profile"
 							]
 						}
@@ -238,13 +446,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/profile",
+							"raw": "http://localhost:8000/v2/profile",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"profile"
 							]
 						}
@@ -266,13 +475,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/profile",
+							"raw": "http://localhost:8000/v2/profile",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"profile"
 							]
 						}
@@ -297,13 +507,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8000/parking-lots?limit=10&offset=10",
+							"raw": "http://localhost:8000/v2/parking-lots?limit=10&offset=10",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots"
 							],
 							"query": [
@@ -348,7 +559,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Scheepshavenkade\",\r\n    \"location\": \"Rotterdam\",\r\n    \"address\": \"Zeemanstraat 11\",\r\n    \"capacity\": 100,\r\n    \"reserved\": 13,\r\n    \"tariff\": 12.50,\r\n    \"daytariff\": 22.00,\r\n    \"latitude\": 52.1133,\r\n    \"longitude\": 4.2234\r\n}",
+							"raw": "{\r\n    \"name\": \"Scheepshavenkade\",\r\n    \"location\": \"Rotterdam\",\r\n    \"address\": \"Zeemanstraat\",\r\n    \"capacity\": 100,\r\n    \"reserved\": 13,\r\n    \"tariff\": 12.50,\r\n    \"daytariff\": 22.00,\r\n    \"latitude\": 52.1133,\r\n    \"longitude\": 4.2234\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -356,13 +567,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/parking-lots",
+							"raw": "http://localhost:8000/v2/parking-lots",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots"
 							]
 						}
@@ -382,13 +594,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}"
 							]
@@ -430,15 +643,38 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/businesses/{business_id}/parking-lots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses/{{business_id}}/parking-lots",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses",
+								"{{business_id}}",
+								"parking-lots"
 							]
 						}
 					},
@@ -467,13 +703,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/vehicles",
+							"raw": "http://localhost:8000/v2/vehicles",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"vehicles"
 							]
 						}
@@ -505,6 +742,34 @@
 								"packages": {},
 								"requests": {}
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function randomLetters(length) {\r",
+									"    const chars = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";\r",
+									"    let result = \"\";\r",
+									"    for (let i = 0; i < length; i++) {\r",
+									"        result += chars.charAt(Math.floor(Math.random() * chars.length));\r",
+									"    }\r",
+									"    return result;\r",
+									"}\r",
+									"\r",
+									"// Keep the 99- prefix, randomize the rest\r",
+									"const prefix = \"99\";\r",
+									"const part1 = randomLetters(2);\r",
+									"const part2 = randomLetters(2);\r",
+									"\r",
+									"const licensePlate = `${prefix}-${part1}-${part2}`;\r",
+									"\r",
+									"// Store in environment\r",
+									"pm.environment.set(\"license_plate\", licensePlate);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
 						}
 					],
 					"request": {
@@ -512,7 +777,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"license_plate\": \"99-SG-FL\",\r\n    \"make\": \"Fiat\",\r\n    \"model\": \"Panda\",\r\n    \"color\": \"Blue\",\r\n    \"year\": \"2006\"\r\n}",
+							"raw": "{\r\n    \"license_plate\": \"{{license_plate}}\",\r\n    \"make\": \"Fiat\",\r\n    \"model\": \"Panda\",\r\n    \"color\": \"Blue\",\r\n    \"year\": \"2006\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -520,13 +785,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/vehicles",
+							"raw": "http://localhost:8000/v2/vehicles",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"vehicles"
 							]
 						}
@@ -551,13 +817,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/vehicles/{{uid}}",
+							"raw": "http://localhost:8000/v2/vehicles/{{uid}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"vehicles",
 								"{{uid}}"
 							]
@@ -604,13 +871,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/vehicles/{{new_vehicle_id}}",
+							"raw": "http://localhost:8000/v2/vehicles/{{new_vehicle_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"vehicles",
 								"{{new_vehicle_id}}"
 							]
@@ -636,13 +904,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8000/reservations",
+							"raw": "http://localhost:8000/v2/reservations",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"reservations"
 							]
 						}
@@ -710,13 +979,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/reservations",
+							"raw": "http://localhost:8000/v2/reservations",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"reservations"
 							]
 						}
@@ -729,13 +999,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/reservations/{{new_reservation_id}}",
+							"raw": "http://localhost:8000/v2/reservations/{{new_reservation_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"reservations",
 								"{{new_reservation_id}}"
 							]
@@ -792,13 +1063,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}/sessions/start",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/start",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}",
 								"sessions",
@@ -836,13 +1108,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}/stop",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}/stop",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}",
 								"sessions",
@@ -866,13 +1139,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}/sessions",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}",
 								"sessions"
@@ -887,13 +1161,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}",
 								"sessions",
@@ -921,13 +1196,14 @@
 							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8000/payments",
+							"raw": "http://localhost:8000/v2/payments",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"payments"
 							]
 						}
@@ -966,13 +1242,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/payments",
+							"raw": "http://localhost:8000/v2/payments",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"payments"
 							]
 						}
@@ -992,13 +1269,14 @@
 							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8000/payments/{{uid}}",
+							"raw": "http://localhost:8000/v2/payments/{{uid}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"payments",
 								"{{uid}}"
 							]
@@ -1016,13 +1294,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8000/payments/{{new_payment_id}}",
+							"raw": "http://localhost:8000/v2/payments/{{new_payment_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"payments",
 								"{{new_payment_id}}"
 							]
@@ -1048,13 +1327,14 @@
 							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8000/billing",
+							"raw": "http://localhost:8000/v2/billing",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"billing"
 							]
 						}
@@ -1074,13 +1354,14 @@
 							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8000/billing/{{uid}}",
+							"raw": "http://localhost:8000/v2/billing/{{uid}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"billing",
 								"{{uid}}"
 							]
@@ -1094,13 +1375,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/billing/monthly",
+							"raw": "http://localhost:8000/v2/billing/monthly",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"billing",
 								"monthly"
 							]
@@ -1119,13 +1401,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}"
 							]
@@ -1161,13 +1444,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}"
 							]
@@ -1190,13 +1474,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/vehicles/{{new_vehicle_id}}",
+							"raw": "http://localhost:8000/v2/vehicles/{{new_vehicle_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"vehicles",
 								"{{new_vehicle_id}}"
 							]
@@ -1237,13 +1522,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/vehicles/{{uid}}",
+							"raw": "http://localhost:8000/v2/vehicles/{{uid}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"vehicles",
 								"{{uid}}"
 							]
@@ -1290,13 +1576,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/reservations/{{new_reservation_id}}",
+							"raw": "http://localhost:8000/v2/reservations/{{new_reservation_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"reservations",
 								"{{new_reservation_id}}"
 							]
@@ -1310,13 +1597,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/reservations/{{new_reservation_id}}",
+							"raw": "http://localhost:8000/v2/reservations/{{new_reservation_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"reservations",
 								"{{new_reservation_id}}"
 							]
@@ -1345,13 +1633,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/reservations/{{new_reservation_id}}",
+							"raw": "http://localhost:8000/v2/reservations/{{new_reservation_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"reservations",
 								"{{new_reservation_id}}"
 							]
@@ -1365,13 +1654,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}",
 								"sessions",
@@ -1402,13 +1692,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"parking-lots",
 								"{{new_parking_lot}}",
 								"sessions",
@@ -1446,13 +1737,14 @@
 							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
 						},
 						"url": {
-							"raw": "http://localhost:8000/payments/{{session_id}}",
+							"raw": "http://localhost:8000/v2/payments/{{session_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"payments",
 								"{{session_id}}"
 							]
@@ -1466,13 +1758,14 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/logout",
+							"raw": "http://localhost:8000/v2/logout",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
+								"v2",
 								"logout"
 							]
 						}
@@ -1571,6 +1864,22 @@
 		},
 		{
 			"key": "new_payment_id",
+			"value": ""
+		},
+		{
+			"key": "new_business_id",
+			"value": ""
+		},
+		{
+			"key": "new_business_address",
+			"value": ""
+		},
+		{
+			"key": "business_id",
+			"value": ""
+		},
+		{
+			"key": "business_address",
 			"value": ""
 		}
 	]
