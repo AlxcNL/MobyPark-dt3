@@ -1,6 +1,6 @@
 import requests
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/v2"
 
 # happy flow
 def test___get_all_parking_lots(headers: dict) -> None:

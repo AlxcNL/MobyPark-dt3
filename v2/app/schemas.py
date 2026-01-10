@@ -273,6 +273,7 @@ class MonthlyBilling(BaseModel):
     average: float
     
 class Business(BaseModel):
+    id: int
     name: str
     address: str
 

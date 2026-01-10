@@ -15,7 +15,7 @@ from app.security import (
 
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="", tags=["auth"])  
+router = APIRouter(prefix="/v2", tags=["auth"])  
 bearer_scheme = HTTPBearer(auto_error=True)
 logger = logging.getLogger(__name__)
 
