@@ -12,7 +12,7 @@ from app.dependencies import get_current_user, page_params, PageParams, licencep
 
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="", tags=["vehicles"])
+router = APIRouter(prefix="/v2", tags=["vehicles"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 @router.post("/vehicles", response_model=schemas.Vehicle, status_code=201)

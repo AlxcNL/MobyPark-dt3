@@ -2,7 +2,7 @@ import requests
 import pytest
 import uuid
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/v2"
 
 # Shared state to store IDs across tests
 @pytest.fixture(scope="module")

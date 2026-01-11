@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -14,7 +13,7 @@ from app.security import require_admin
 
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="", tags=["billing"])
+router = APIRouter(prefix="/v2", tags=["billing"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 @router.get("/billing", response_model=schemas.BillingSummary)

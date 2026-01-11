@@ -13,7 +13,7 @@ from app.dependencies import get_current_user, page_params, PageParams, generate
 from datetime import datetime, timezone
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="", tags=["payments"])
+router = APIRouter(prefix="/v2", tags=["payments"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 # post a payment for a session
