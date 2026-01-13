@@ -1,0 +1,1886 @@
+{
+	"info": {
+		"_postman_id": "da3f65b8-dcf0-4580-89eb-973984321357",
+		"name": "MobiPark - Full test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40069173"
+	},
+	"item": [
+		{
+			"name": "Business",
+			"item": [
+				{
+					"name": "/businesses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.id) {\r",
+									"    pm.collectionVariables.set(\"business_id\", response.id);\r",
+									"}\r",
+									"\r",
+									"if (response.address) {\r",
+									"    pm.collectionVariables.set(\"business_address\", response.address);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"business_name\": \"ERTU BV\",\r\n  \"address\": \"Parkweg 100, Schiedam\",\r\n  \"username\": \"ertu_bv\",\r\n  \"email\": \"ertu@bv.nl\",\r\n  \"password\": \"SuperSecret123!\",\r\n  \"name\": \"Ertu Kara\",\r\n  \"phone\": \"+31612345678\",\r\n  \"birth_year\": 2000,\r\n  \"role\": \"ADMIN\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/businesses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/businesses/{business_id}",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses/{{business_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses",
+								"{{business_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/login business",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the JSON response\r",
+									"let response = pm.response.json();\r",
+									"\r",
+									"// Save access_token to collection variables\r",
+									"if (response.access_token) {\r",
+									"    pm.collectionVariables.set(\"access_token\", response.access_token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"ertu_bv\",\r\n    \"password\": \"SuperSecret123!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/businesses",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.code === 200) {\r",
+									"    const response = pm.response.json();\r",
+									"    const originalBusinessAddress = pm.collectionVariables.get(\"business_address\");\r",
+									"\r",
+									"    pm.test(\"business_address was updated\", function () {\r",
+									"        pm.expect(response.address).to.not.eql(originalBusinessAddress);\r",
+									"    });\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"name\": \"ERTU BV\",\r\n   \"address\": \"Parkweg 110, Rotterdam\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "/register",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"username\", \"ertu\");\r",
+									"pm.variables.set(\"email\", \"test@ertu.nl\");\r",
+									"pm.variables.set(\"password\", \"test123!\");\r",
+									"pm.variables.set(\"name\", \"Test Script User\");\r",
+									"pm.variables.set(\"phone\", \"0612345678\");\r",
+									"pm.variables.set(\"birth_year\", \"2000\");"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response body\r",
+									"let response = pm.response.json();\r",
+									"\r",
+									"// Save username and email to global variables\r",
+									"if (response.username) {\r",
+									"    pm.globals.set(\"saved_username\", response.username);\r",
+									"}\r",
+									"\r",
+									"if (response.email) {\r",
+									"    pm.globals.set(\"saved_email\", response.email);\r",
+									"}\r",
+									"\r",
+									"// Optional logging\r",
+									"console.log(\"Saved username:\", pm.globals.get(\"saved_username\"));\r",
+									"console.log(\"Saved email:\", pm.globals.get(\"saved_email\"));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Length",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"email\": \"{{email}}\",\r\n  \"password\": \"{{password}}\",\r\n  \"name\": \"{{name}}\",\r\n  \"phone\": \"{{phone}}\",\r\n  \"birth_year\": \"{{birth_year}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the JSON response\r",
+									"let response = pm.response.json();\r",
+									"\r",
+									"// Save access_token to collection variables\r",
+									"if (response.access_token) {\r",
+									"    pm.collectionVariables.set(\"access_token\", response.access_token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"ertu_bv\",\r\n    \"password\": \"SuperSecret123!\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "/profile [get_into]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.id) {\r",
+									"    pm.collectionVariables.set(\"uid\", response.id);\r",
+									"}\r",
+									"\r",
+									"if (response.email) {\r",
+									"    pm.collectionVariables.set(\"original_email\", response.email);\r",
+									"}\r",
+									"\r",
+									"if (response.phone) {\r",
+									"    pm.collectionVariables.set(\"original_phone\", response.phone);\r",
+									"}\r",
+									"\r",
+									"if (response.birth_year) {\r",
+									"    pm.collectionVariables.set(\"original_birth_year\", response.birth_year);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"const originalPhone = pm.collectionVariables.get(\"original_phone\");\r",
+									"const originalBirthYear = pm.collectionVariables.get(\"original_birth_year\");\r",
+									"\r",
+									"pm.test(\"Phone was updated\", function () {\r",
+									"    pm.expect(response.phone).to.not.eql(originalPhone);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Birth year was updated\", function () {\r",
+									"    pm.expect(response.birth_year.toString()).to.not.eql(originalBirthYear.toString());\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"phone\": \"06987654321\",\r\n    \"birth_year\": \"2010\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/profile [revert]",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"test_script_user@example.nl\",\r\n    \"phone\": \"0612345678\",\r\n    \"birth_year\": \"2000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Parking-lots",
+			"item": [
+				{
+					"name": "/parking-lots",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots?limit=10&offset=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/parking-lots",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.id) {\r",
+									"    pm.collectionVariables.set(\"new_parking_lot\", response.id);\r",
+									"}\r",
+									"\r",
+									"if (response.reserved) {\r",
+									"    pm.collectionVariables.set(\"new_parking_lot_reserved\", response.reserved);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Scheepshavenkade\",\r\n    \"location\": \"Rotterdam\",\r\n    \"address\": \"Zeemanstraat\",\r\n    \"capacity\": 100,\r\n    \"reserved\": 13,\r\n    \"tariff\": 12.50,\r\n    \"daytariff\": 22.00,\r\n    \"latitude\": 52.1133,\r\n    \"longitude\": 4.2234,\r\n    \"business_id\": {{business_id}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/parking-lots/{lid}",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/parking-lots/{lid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"const originalReserved = pm.collectionVariables.get(\"new_parking_lot_reserved\");\r",
+									"\r",
+									"pm.test(\"reservation count was updated\", function () {\r",
+									"    pm.expect(response.reserved).to.not.eql(originalReserved);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Scheepshavenkade1\",\r\n    \"location\": \"Schiedam\",\r\n    \"reserved\": \"25\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/businesses/{business_id}/parking-lots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/businesses/{{business_id}}/parking-lots",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"businesses",
+								"{{business_id}}",
+								"parking-lots"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Vehicles",
+			"item": [
+				{
+					"name": "/vehicles",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"license_plate\": \"99-SG-FL\",\r\n    \"make\": \"Fiat\",\r\n    \"model\": \"Panda\",\r\n    \"color\": \"Blue\",\r\n    \"year\": \"2005\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/vehicles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"vehicles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/vehicles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.vehicle_id) {\r",
+									"    pm.collectionVariables.set(\"new_vehicle_id\", response.vehicle_id);\r",
+									"}\r",
+									"\r",
+									"if (response.make) {\r",
+									"    pm.collectionVariables.set(\"new_vehicle_make\", response.make);\r",
+									"}\r",
+									"\r",
+									"if (response.model) {\r",
+									"    pm.collectionVariables.set(\"new_vehicle_model\", response.model);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function randomLetters(length) {\r",
+									"    const chars = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";\r",
+									"    let result = \"\";\r",
+									"    for (let i = 0; i < length; i++) {\r",
+									"        result += chars.charAt(Math.floor(Math.random() * chars.length));\r",
+									"    }\r",
+									"    return result;\r",
+									"}\r",
+									"\r",
+									"// Keep the 99- prefix, randomize the rest\r",
+									"const prefix = \"99\";\r",
+									"const part1 = randomLetters(2);\r",
+									"const part2 = randomLetters(2);\r",
+									"\r",
+									"const licensePlate = `${prefix}-${part1}-${part2}`;\r",
+									"\r",
+									"// Store in environment\r",
+									"pm.environment.set(\"license_plate\", licensePlate);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"license_plate\": \"{{license_plate}}\",\r\n    \"make\": \"Fiat\",\r\n    \"model\": \"Panda\",\r\n    \"color\": \"Blue\",\r\n    \"year\": \"2006\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/vehicles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"vehicles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/vehicles/{uid}",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"license_plate\": \"99-SG-FL\",\r\n    \"make\": \"Fiat\",\r\n    \"model\": \"Panda\",\r\n    \"color\": \"Blue\",\r\n    \"year\": \"2005\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/vehicles/{{uid}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"vehicles",
+								"{{uid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/vehicles/{vid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"const originalMake = pm.collectionVariables.get(\"new_vehicle_make\");\r",
+									"const originalModel = pm.collectionVariables.get(\"new_vehicle_model\");\r",
+									"\r",
+									"pm.test(\"vehicle make was updated\", function () {\r",
+									"    pm.expect(response.make).to.not.eql(originalMake);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"vehicle model was updated\", function () {\r",
+									"    pm.expect(response.model).to.not.eql(originalModel);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"make\": \"Volkswagen\",\r\n    \"model\": \"Golf VII\",\r\n    \"year\": 2021\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/vehicles/{{new_vehicle_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"vehicles",
+								"{{new_vehicle_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reservations",
+			"item": [
+				{
+					"name": "/reservations",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/reservations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/reservations",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Get current time\r",
+									"const now = new Date();\r",
+									"\r",
+									"// Create start_time = now - 10 minutes\r",
+									"const start = new Date(now.getTime() - 10 * 60 * 1000);\r",
+									"const end = new Date(now.getTime() + 10 * 60 * 1000);\r",
+									"\r",
+									"// Convert both to ISO strings without milliseconds\r",
+									"const startISO = start.toISOString().split('.')[0];\r",
+									"const endISO = end.toISOString().split('.')[0];\r",
+									"\r",
+									"// Save in Postman variables\r",
+									"pm.variables.set(\"start_time\", startISO);\r",
+									"pm.variables.set(\"end_time\", endISO);\r",
+									"\r",
+									"// Optional logs\r",
+									"console.log(\"start_time:\", startISO);\r",
+									"console.log(\"end_time:\", endISO);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.id) {\r",
+									"    pm.collectionVariables.set(\"new_reservation_id\", response.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vehicles_id\": {{new_vehicle_id}},\r\n    \"parking_lots_id\": {{new_parking_lot}},\r\n    \"start_time\": \"{{start_time}}\",\r\n    \"end_time\": \"{{end_time}}\",\r\n    \"cost\": 15.00\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/reservations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/reservations/{id}",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/reservations/{{new_reservation_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"reservations",
+								"{{new_reservation_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sessions",
+			"item": [
+				{
+					"name": "/sessions/start",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the JSON response\r",
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.id) {\r",
+									"    pm.collectionVariables.set(\"session_id\", response.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vehicle_id\": {{new_vehicle_id}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/start",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}",
+								"sessions",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/sessions/stop",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}/stop",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}",
+								"sessions",
+								"{{session_id}}",
+								"stop"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/sessions",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}",
+								"sessions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "sessions/{sid}",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}",
+								"sessions",
+								"{{session_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "/payments",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/payments",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/payments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"if (response.id) {\r",
+									"    pm.collectionVariables.set(\"new_payment_id\", response.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sessions_id\": {{session_id}},\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/payments",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/payments/{uid}",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/payments/{{uid}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"payments",
+								"{{uid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/payments/{pid}",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/payments/{{new_payment_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"payments",
+								"{{new_payment_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Billing",
+			"item": [
+				{
+					"name": "/billing",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/billing",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"billing"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/billing/{uid}",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/billing/{{uid}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"billing",
+								"{{uid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/billing/monthly",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/billing/monthly",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"billing",
+								"monthly"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delete tests",
+			"item": [
+				{
+					"name": "/parking-lots/{lid}",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/parking-lots/{lid} [Deleted Check]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/vehicles/{vid}",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/vehicles/{{new_vehicle_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"vehicles",
+								"{{new_vehicle_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/vehicles/{uid} [Delete Check]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/vehicles/{{uid}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"vehicles",
+								"{{uid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/reservations/{id}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"\r",
+									"const originalParkingLot = pm.collectionVariables.get(\"new_parking_lot_reserved\");\r",
+									"const originalVehicle = pm.collectionVariables.get(\"new_vehicle_id\");\r",
+									"\r",
+									"pm.test(\"parking_lot_id was updated\", function () {\r",
+									"    pm.expect(response.parking_lots_id).to.not.eql(originalParkingLot);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"parking_lot_id was updated\", function () {\r",
+									"    pm.expect(response.vehicles_id).to.not.eql(originalVehicle);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vehicles_id\": 2,\r\n    \"parking_lots_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/reservations/{{new_reservation_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"reservations",
+								"{{new_reservation_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/reservations/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/reservations/{{new_reservation_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"reservations",
+								"{{new_reservation_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/reservations/{id} [Delete Check]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/reservations/{{new_reservation_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"reservations",
+								"{{new_reservation_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "sessions/{sid}",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}",
+								"sessions",
+								"{{session_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "sessions/{sid} [Deleted Check]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/parking-lots/{{new_parking_lot}}/sessions/{{session_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"parking-lots",
+								"{{new_parking_lot}}",
+								"sessions",
+								"{{session_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/payments/{uid} [Deleted Check]",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sessions_id\": 1,\r\n    \"method\": \"Ideal\",\r\n    \"issuer\": \"Erto\",\r\n    \"bank\": \"ABNAMRO\"\r\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8000/v2/payments/{{session_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"payments",
+								"{{session_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v2/logout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v2",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "token_expiry",
+			"value": ""
+		},
+		{
+			"key": "original_email",
+			"value": ""
+		},
+		{
+			"key": "original_phone",
+			"value": ""
+		},
+		{
+			"key": "original_birth_year",
+			"value": ""
+		},
+		{
+			"key": "new_parking_lot",
+			"value": ""
+		},
+		{
+			"key": "new_parking_lot_reserved",
+			"value": ""
+		},
+		{
+			"key": "new_vehicle_id",
+			"value": ""
+		},
+		{
+			"key": "new_vehicle_make",
+			"value": ""
+		},
+		{
+			"key": "new_vehicle_model",
+			"value": ""
+		},
+		{
+			"key": "uid",
+			"value": ""
+		},
+		{
+			"key": "new_reservation_id",
+			"value": ""
+		},
+		{
+			"key": "session_id",
+			"value": ""
+		},
+		{
+			"key": "new_payment_id",
+			"value": ""
+		},
+		{
+			"key": "new_business_id",
+			"value": ""
+		},
+		{
+			"key": "new_business_address",
+			"value": ""
+		},
+		{
+			"key": "business_id",
+			"value": ""
+		},
+		{
+			"key": "business_address",
+			"value": ""
+		}
+	]
+}

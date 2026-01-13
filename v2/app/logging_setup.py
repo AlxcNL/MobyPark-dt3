@@ -36,7 +36,7 @@ def setup_logging(log_level):
 
     root = logging.getLogger()
     root.setLevel(log_level)
-    root.handlers = [handler]  # simpel: alleen file logging
+    root.handlers = [handler]
     root.addFilter(DefaultContextFilter())
 
 logger = logging.getLogger("mobypark")

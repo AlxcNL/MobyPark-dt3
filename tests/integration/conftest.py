@@ -2,7 +2,7 @@ import pytest
 import requests
 import uuid
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/v2"
 
 @pytest.fixture(scope="session")
 def headers() -> dict:

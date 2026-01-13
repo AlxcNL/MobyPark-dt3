@@ -15,7 +15,7 @@ from app.security import (
 
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="", tags=["auth"])  
+router = APIRouter(prefix="/v2", tags=["auth"])  
 bearer_scheme = HTTPBearer(auto_error=True)
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ async def register(payload: schemas.UserCreate, db: AsyncSession = Depends(get_d
         name=payload.name,
         phone=payload.phone,
         birth_year=payload.birth_year,
-        role=payload.role
+        role=payload.role.upper()
     )
     db.add(new_user)
     await db.commit()

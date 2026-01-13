@@ -6,15 +6,11 @@ RESERVATIONS_JSON = "./tools/import_jsons/data/reservations.json"
 def _normalize_status(status: str) -> str:
     s = (status or "").strip().lower()
     if s == "completed":
-        return "COMPLETED"
+        return "completed"
     if s in {"cancelled", "canceled"}:
-        return "CANCELLED"
-    if s == "active":
-        return "ACTIVE"
-    if s == "pending":
-        return "PENDING"
+        return "canceled"
     # treat everything else as confirmed
-    return "CONFIRMED"
+    return "confirmed"
 
 def run(conn: sqlite3.Connection):
     cur = conn.cursor()
@@ -28,7 +24,7 @@ def run(conn: sqlite3.Connection):
         return cur.fetchone() is not None
 
     def _lot_exists(lot_id: int) -> bool:
-        cur.execute("SELECT 1 FROM parking_lots WHERE lot_id = ? LIMIT 1", (lot_id,))
+        cur.execute("SELECT 1 FROM parking_lots WHERE id = ? LIMIT 1", (lot_id,))
         return cur.fetchone() is not None
 
     def _get_vehicle_info(veh_id: int):
@@ -37,10 +33,9 @@ def run(conn: sqlite3.Connection):
         return (row[0], row[1]) if row else (None, None)
 
     sql = """
-        INSERT OR REPLACE INTO reservations
-            (reservation_id, user_id, lot_id, vehicle_id, license_plate,
-             start_date, end_date, start_time, end_time, total_amount, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO reservation
+            (id, vehicles_id, parking_lots_id, start_time, end_time, cost, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     inserted, skipped_vehicle, skipped_lot = 0, 0, 0
@@ -65,15 +60,9 @@ def run(conn: sqlite3.Connection):
             print(f"[reservations] skip id={rid} (user not found for vehicle={veh_id})")
             continue
 
-        # Parse start_time and end_time if they contain both date and time
-        start_datetime = r.get("start_time", "")
-        end_datetime = r.get("end_time", "")
-
-        # Try to split datetime into date and time parts
-        start_date = start_datetime.split("T")[0] if "T" in start_datetime else start_datetime.split(" ")[0]
-        start_time = start_datetime.split("T")[1] if "T" in start_datetime else None
-        end_date = end_datetime.split("T")[0] if "T" in end_datetime else end_datetime.split(" ")[0]
-        end_time = end_datetime.split("T")[1] if "T" in end_datetime else None
+        # Get start_time and end_time from the reservation data
+        start_time = r.get("start_time", "")
+        end_time = r.get("end_time", "")
 
         cost = float(r.get("cost", 0)) if r.get("cost") is not None else 0.0
 
@@ -81,17 +70,13 @@ def run(conn: sqlite3.Connection):
             sql,
             (
                 rid,
-                user_id,
-                lot_id,
                 veh_id,
-                license_plate,
-                start_date,
-                end_date,
+                lot_id,
                 start_time,
                 end_time,
                 cost,
                 _normalize_status(r.get("status")),
-                r.get("created_at") or start_datetime,
+                r.get("created_at") or start_time,
             ),
         )
         inserted += 1

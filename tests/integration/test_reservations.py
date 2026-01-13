@@ -2,7 +2,7 @@ import requests
 import random
 import string
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/v2"
 
 # happy flow
 def test_get_all_reservations(headers: dict) -> None:
@@ -12,16 +12,15 @@ def test_get_all_reservations(headers: dict) -> None:
 def test_make_reservation(headers: dict) -> None:
     payload = {
         "license_plate": generate_code(),
-        "make": "Toyodata",
-        "model": "Codrolla",
-        "color": "Red",
-        "year": 2020
+        "brand": "Toyota",
+        "model": "Corolla",
+        "color": "Red"
     }
     vehicle_response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=payload)
     response_json = vehicle_response.json()
 
     payload = {
-        "vehicles_id": response_json["id"],
+        "vehicles_id": response_json["vehicle_id"],
         "parking_lots_id": 1,
         "start_time": "2020-05-17 00:00:00",
         "end_time": "2020-05-17 12:00:00",
@@ -29,21 +28,20 @@ def test_make_reservation(headers: dict) -> None:
         "cost": 10
     }
     response = requests.post(f"{BASE_URL}/reservations", headers=headers, json=payload)
-    assert response.status_code == 200, response_json
+    assert response.status_code == 201, response_json
 
 def test_delete_reservation(headers: dict) -> None:
     vehicle_payload = {
         "license_plate": generate_code(),
-        "make": "Toyodata",
-        "model": "Cocdrolla",
-        "color": "Red",
-        "year": 2020
+        "brand": "Toyota",
+        "model": "Corolla",
+        "color": "Red"
     }
     vehicle_response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=vehicle_payload)
     response_json = vehicle_response.json()
 
     payload = {
-        "vehicles_id": response_json["id"],
+        "vehicles_id": response_json["vehicle_id"],
         "parking_lots_id": 1,
         "start_time": "2020-05-17 00:00:00",
         "end_time": "2020-05-17 12:00:00",
@@ -59,16 +57,16 @@ def test_delete_reservation(headers: dict) -> None:
 def test_update_reservation(headers: dict) -> None:
     vehicle_payload = {
         "license_plate": generate_code(),
-        "make": "Toyodata",
-        "model": "Cocdsarolla",
-        "color": "Red",
-        "year": 2020
+        "brand": "Toyota",
+        "model": "Corolla",
+        "color": "Red"
     }
     vehicle_response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=vehicle_payload)
-    response_json = vehicle_response.json()
+    vehicle_json = vehicle_response.json()
+    vehicle_id = vehicle_json["vehicle_id"]
 
     payload = {
-        "vehicles_id": response_json["id"],
+        "vehicles_id": vehicle_id,
         "parking_lots_id": 1,
         "start_time": "2020-05-17 00:00:00",
         "end_time": "2020-05-17 12:00:00",
@@ -79,7 +77,7 @@ def test_update_reservation(headers: dict) -> None:
     response_json = response.json()
 
     payload = {
-        "vehicles_id": response_json["id"],
+        "vehicles_id": vehicle_id,
         "parking_lots_id": 1,
         "start_time": "2020-05-17 00:00:00",
         "end_time": "2020-05-17 12:00:00",
@@ -127,16 +125,16 @@ def test__update_non_existing_reservation(headers: dict) -> None:
 def test__update_reservation_validation(headers: dict) -> None:
     vehicle_payload = {
         "license_plate": generate_code(),
-        "make": "Toyodata",
-        "model": "Cocdsarolla",
-        "color": "Red",
-        "year": 2020
+        "brand": "Toyota",
+        "model": "Corolla",
+        "color": "Red"
     }
     vehicle_response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=vehicle_payload)
-    response_json = vehicle_response.json()
+    vehicle_json = vehicle_response.json()
+    vehicle_id = vehicle_json["vehicle_id"]
 
     payload = {
-        "vehicles_id": response_json["id"],
+        "vehicles_id": vehicle_id,
         "parking_lots_id": 1,
         "start_time": "2020-05-17 00:00:00",
         "end_time": "2020-05-17 12:00:00",
@@ -147,7 +145,7 @@ def test__update_reservation_validation(headers: dict) -> None:
     response_json = response.json()
 
     payload = {
-        "vehicles_id": response_json["id"],
+        "vehicles_id": vehicle_id,
         "parking_lots_id": -1,
         "start_time": "2020-d-17 00:00:00",
         "end_time": "2020-05-17 12:00:00",

@@ -15,27 +15,25 @@ def run(conn: sqlite3.Connection):
 
     sql = """
         INSERT OR REPLACE INTO parking_lots
-            (lot_id, name, address, city, postal_code, latitude, longitude,
-             total_capacity, available_spots, hourly_rate, daily_rate, is_active, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (id, name, location, address, latitude, longitude,
+             capacity, reserved, tariff, daytariff, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     for lot in lots:
         coords = lot.get("coordinates", {})
         capacity = int(lot.get("capacity", 0))
         reserved = int(lot.get("reserved", 0))
-        available = capacity - reserved if capacity >= reserved else capacity
 
         cur.execute(sql, (
             int(lot["id"]),
             lot["name"],
+            lot.get("location", "Unknown"),
             lot.get("address", ""),
-            lot.get("location", "Unknown"),  # Use location as city
-            None,  # postal_code - not in source data
             coords.get("lat"),
             coords.get("lng"),
             capacity,
-            available,
+            reserved,
             float(lot.get("tariff")) if lot.get("tariff") is not None else 0.0,
             float(lot.get("daytariff")) if lot.get("daytariff") is not None else 0.0,
             1,  # is_active - default to true

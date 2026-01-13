@@ -4,12 +4,14 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 
 def hash_password(password: str):
+    # Simple SHA-256 hashing for demonstration purposes.
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    # Verify a plain password against the hashed version.
     return hash_password(plain_password) == hashed_password
 
-TOKEN_TTL = timedelta(minutes=5)
+TOKEN_TTL = timedelta(minutes=15)
 active_tokens: dict[str, tuple[int, datetime]] = {}
 
 def create_token(user_id: int):
@@ -42,6 +44,7 @@ def check_token(token: str):
     return user_id
 
 def require_admin(user: str):
-    if not user or getattr(user, "role", None) != "admin":
+    # Raises HTTPException if user is not admin.
+    if not user or getattr(user, "role", None) != "ADMIN":
         raise HTTPException(status_code=403,detail="Admin privileges required")
     return True

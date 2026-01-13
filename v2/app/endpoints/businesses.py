@@ -13,16 +13,17 @@ from app.security import (
     remove_token, remove_all_tokens_for_user
 )
 
-router = APIRouter(prefix="", tags=["auth"])  
+router = APIRouter(prefix="/v2", tags=["auth"])  
 bearer_scheme = HTTPBearer(auto_error=True)
 
-@router.put("/businesses", response_model=schemas.Message)
+@router.put("/businesses", response_model=schemas.Business)
 async def update_business(
     payload: schemas.BusinessUpdate,
     creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     current_business_user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+
     changed = False
     result = await db.execute(select(models.Business).where(models.Business.id == current_business_user.business_id))
     current_business = result.scalar_one_or_none()
@@ -40,12 +41,11 @@ async def update_business(
     if changed:
         db.add(current_business)
         await db.commit()
-    else:
-        return schemas.Message(message="No changes provided.")
+        await db.refresh(current_business)
     
-    return schemas.Message(message="Business details have been changed succesfully")
+    return current_business
     
-@router.post("/businesses", response_model=schemas.Message)
+@router.post("/businesses", response_model=schemas.Business)
 async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = Depends(get_db)):
     #username or email already exists
     result = await db.execute(
@@ -82,14 +82,13 @@ async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = 
         name=payload.name,
         phone=payload.phone,
         birth_year=payload.birth_year,
-        role=payload.role,
+        role=payload.role.upper(),
         business_id=new_business.id
     )
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)  
     
-    # Query the newly added user to check if it has been added correctly
     result = await db.execute(
         select(models.User).where(
             (models.User.business_id == new_business.id)
@@ -98,19 +97,22 @@ async def register_business(payload: schemas.BusinessCreate, db: AsyncSession = 
     )
     new_user = result.scalar_one_or_none()
     if not new_user:
-        logging.error("Business ID does not exist when adding user or user could not be added")
+        logging.error("Business ID does not exist when adding user or user could not be added ")
         raise HTTPException(status_code=404, detail="Something went wrong when adding the business")
-    
-    return schemas.Message(message="Business registered successfully.")
+
+    return new_business
 
 # parking lots van een business
-@router.get("/businesses/{business_id}/parking-lots", response_model=schemas.ParkingLotDetails)
+@router.get("/businesses/{business_id}/parking-lots", response_model=list[schemas.ParkingLotBase])
 async def get_parking_lot(business_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     result = await db.execute(select(models.ParkingLot).where(models.ParkingLot.business_id == business_id))
-    lot = result.scalar_one_or_none()
+    
+    #list all of the business parking_lots
+    lot = result.scalars().all()
     if not lot:
         logging.error("Parking lot not found")
         raise HTTPException(status_code=404, detail="Parking lot not found")
+    logging.info("Parking lot found for business id %s", business_id)
     return lot
 
 @router.get("/businesses/{business_id}", response_model=schemas.BusinessRead)

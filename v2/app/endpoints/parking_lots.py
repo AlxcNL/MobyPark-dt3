@@ -12,13 +12,31 @@ from app.dependencies import get_current_user, page_params, PageParams
 
 from app.logging_setup import log_event
 
-router = APIRouter(prefix="", tags=["parking_lots"])
+router = APIRouter(prefix="/v2", tags=["parking_lots"])
 bearer_scheme = HTTPBearer(auto_error=True)
 
 @router.post("/parking-lots", response_model=schemas.ParkingLotDetails)
-async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme), current_user: models.User = Depends(get_current_user)):
+async def create_parking_lot(
+    lot: schemas.CreateParkingLot,
+    db: AsyncSession = Depends(get_db),
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    current_user: models.User = Depends(get_current_user),
+):
     require_admin(current_user)
 
+    # Use ONLY the provided business_id (it is optional)
+    business_id = lot.business_id
+
+    # If a business_id was provided, validate that it exists
+    if business_id is not None:
+        result = await db.execute(
+            select(models.Business).where(models.Business.id == business_id)
+        )
+        business = result.scalar_one_or_none()
+        if not business:
+            raise HTTPException(status_code=404, detail="Business not found")
+
+    # Create the parking lot (business_id may be NULL)
     new_lot = models.ParkingLot(
         name=lot.name,
         location=lot.location,
@@ -28,14 +46,17 @@ async def create_parking_lot(lot: schemas.CreateParkingLot, db: AsyncSession = D
         tariff=lot.tariff,
         daytariff=lot.daytariff,
         latitude=lot.latitude,
-        longitude=lot.longitude
+        longitude=lot.longitude,
+        business_id=business_id,
     )
+
     db.add(new_lot)
     await db.commit()
     await db.refresh(new_lot)
 
     log_event(logging.INFO, "/parking-lots", 201, "Parking lot created")
     return new_lot
+
 
 @router.get("/parking-lots", response_model=schemas.Page[schemas.ParkingLot])
 async def list_parking_lots(p: PageParams = Depends(page_params), db: AsyncSession = Depends(get_db), creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
@@ -53,7 +74,6 @@ async def list_parking_lots(p: PageParams = Depends(page_params), db: AsyncSessi
     )
     rows = result.scalars().all()
 
-    # thanks to from_attributes=True you can return ORM rows
     items = rows
     log_event(logging.INFO, "/parking-lots", 200, "Parking lots listed")
     return schemas.Page(items=items, total=total, limit=p.limit, offset=p.offset)

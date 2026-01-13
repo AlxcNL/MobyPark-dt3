@@ -2,7 +2,7 @@ import requests
 import pytest
 import uuid
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/v2"
 
 # Shared state to store IDs across tests
 @pytest.fixture(scope="module")
@@ -37,25 +37,27 @@ def test_01_start_parking_session(headers: dict, test_data: dict) -> None:
     # Create vehicle
     payload = {
         "license_plate": f"TST{unique_id}",
-        "make": "Toyota",
+        "brand": "Toyota",
         "model": "Corolla",
         "color": "Red",
-        "year": 2020
+        "vehicle_name": "Test Car"
     }
     response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=payload)
     vehicle_data = response.json()
-    test_data["vehicle_id"] = vehicle_data["id"]
+    test_data["vehicle_id"] = vehicle_data["vehicle_id"]
 
     # Start parking session
     parking_lot_id = test_data["parking_lot_id"]
     vehicle_id = test_data["vehicle_id"]
+    license_plate = f"TST{unique_id}"
 
     payload = {
         "parking_lots_id": parking_lot_id,
-        "vehicles_id": vehicle_id
+        "vehicle_id": vehicle_id,
+        "license_plate": license_plate
     }
     response = requests.post(f"{BASE_URL}/parking-lots/{parking_lot_id}/sessions/start", headers=headers, json=payload)
-    assert response.status_code == 200
+    assert response.status_code == 201
     session_data = response.json()
     test_data["session_id"] = session_data.get("id")
 
@@ -80,9 +82,10 @@ def test_04_delete_session(headers: dict, test_data: dict) -> None:
 def test_start_non_existing_parking_lot(headers: dict) -> None:
     payload = {
         "parking_lots_id": 9999,
-        "vehicles_id": 9999
+        "vehicle_id": 9999,
+        "license_plate": "FAKE999"
     }
-    response = requests.post(f"{BASE_URL}/parking-lots/-9999/sessions/start", headers=headers, json=payload)
+    response = requests.post(f"{BASE_URL}/parking-lots/9999/sessions/start", headers=headers, json=payload)
     assert response.status_code == 404
     
 def test_delete_non_existing_session(headers: dict) -> None:
@@ -92,17 +95,14 @@ def test_delete_non_existing_session(headers: dict) -> None:
 def test_update_non_existing_session(headers: dict) -> None:
     payload = {
         "parking_lots_id": 9999,
-        "vehicles_id": 9999
+        "vehicle_id": 9999,
+        "license_plate": "FAKE999"
     }
-    response = requests.put(f"{BASE_URL}/parking-lots/-9999/sessions/1", headers=headers, json=payload)
+    response = requests.put(f"{BASE_URL}/parking-lots/9999/sessions/1", headers=headers, json=payload)
     assert response.status_code == 405
 
 def test_stop_non_existing_session(headers: dict) -> None:
-    payload = {
-        "parking_lots_id": 9999,
-        "vehicles_id": 9999
-    }
-    response = requests.post(f"{BASE_URL}/parking-lots/-9999/sessions/stop", headers=headers, json=payload)
-    assert response.status_code == 405
+    response = requests.post(f"{BASE_URL}/parking-lots/9999/sessions/9999/stop", headers=headers)
+    assert response.status_code == 404
     
     

@@ -2,7 +2,7 @@ import requests
 import pytest
 import uuid
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/v2"
 
 def test___get_all_vehicles(headers: dict) -> None:
     response = requests.get(f"{BASE_URL}/vehicles", headers=headers)
@@ -12,10 +12,9 @@ def test_add_vehicle(headers: dict) -> None:
     unique_id = str(uuid.uuid4())[:6].upper()
     payload = {
         "license_plate": f"AAC{unique_id}",
-        "make": "Toyoata",
-        "model": "Codrolla",
-        "color": "Red",
-        "year": 2020
+        "brand": "Toyota",
+        "model": "Corolla",
+        "color": "Red"
     }
     response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=payload)
     assert response.status_code in [200, 201], f"Unexpected response: {response.status_code}, {response.text}"
@@ -24,15 +23,14 @@ def test_get_vehicle(headers : dict) -> None:
     unique_id = str(uuid.uuid4())[:6].upper()
     payload = {
         "license_plate": f"BCC{unique_id}",
-        "make": "Honda",
+        "brand": "Honda",
         "model": "Civic",
-        "color": "Blue",
-        "year": 2021
+        "color": "Blue"
     }
 
     response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=payload)
     response_json = response.json()
-    vehicle_id = response_json["id"]
+    vehicle_id = response_json["vehicle_id"]
 
     response = requests.get(f"{BASE_URL}/vehicles/{vehicle_id}", headers=headers)
     assert response.status_code == 200
@@ -41,22 +39,20 @@ def test_update_vehicle(headers: dict) -> None:
     unique_id = str(uuid.uuid4())[:6].upper()
     payload = {
         "license_plate": f"ASA{unique_id}",
-        "make": "Ford",
+        "brand": "Ford",
         "model": "Focus",
-        "color": "Black",
-        "year": 2019
+        "color": "Black"
     }
     response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=payload)
     json_response = response.json()
-    vehicle_id = json_response["id"]
+    vehicle_id = json_response["vehicle_id"]
 
     unique_id2 = str(uuid.uuid4())[:6].upper()
     payload = {
         "license_plate": f"ASA{unique_id2}",
-        "make": "Ford",
+        "brand": "Ford",
         "model": "Fiesta",
-        "color": "Green",
-        "year": 2020
+        "color": "Green"
     }
     response = requests.put(f"{BASE_URL}/vehicles/{vehicle_id}", headers=headers, json=payload)
     assert response.status_code == 200
@@ -65,13 +61,12 @@ def test_deleting_vehicle(headers: dict) -> None:
     unique_id = str(uuid.uuid4())[:6].upper()
     payload = {
         "license_plate": f"SSA{unique_id}",
-        "make": "Nissan",
+        "brand": "Nissan",
         "model": "Altima",
-        "color": "White",
-        "year": 2021
+        "color": "White"
     }
     response = requests.post(f"{BASE_URL}/vehicles", headers=headers, json=payload)
-    vehicle_id = response.json()["id"]
+    vehicle_id = response.json()["vehicle_id"]
 
     response = requests.delete(f"{BASE_URL}/vehicles/{vehicle_id}", headers=headers)
     assert response.status_code == 200
@@ -96,10 +91,9 @@ def test__get_non_existing_vehicle(headers: dict) -> None:
 def test_update_non_existing_vehicle(headers: dict) -> None:
     payload = {
         "license_plate": "NON123",
-        "make": "Honda",
+        "brand": "Honda",
         "model": "Civic",
-        "color": "Yellow",
-        "year": 2021
+        "color": "Yellow"
     }
     response = requests.put(f"{BASE_URL}/vehicles/111", headers=headers, json=payload)
     assert response.status_code == 404

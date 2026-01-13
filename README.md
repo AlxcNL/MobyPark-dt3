@@ -459,3 +459,83 @@ docker compose logs -f filebeat
 docker compose down -v  # Removes volumes
 docker compose up -d    # Fresh start
 ```
+
+## Postman Collection
+
+This project includes a Postman collection that can be used to manually test
+and explore the API without writing any client code.
+
+### Location
+
+The Postman collection is located in the root of the /v2 directory:
+
+    /v2/MobiPark - Full test.postman_collection.json
+
+You can import this file directly into Postman.
+
+### Importing the collection
+
+1. Open Postman
+2. Click "Import"
+3. Select "File"
+4. Choose: MobiPark - Full test.postman_collection.json
+5. The collection will appear in your Postman sidebar
+
+### Authentication
+
+Most endpoints in the collection require authentication.
+
+The typical flow is:
+
+1. Send the login/authentication request
+2. The API returns a JWT access token
+3. A Postman post-request script automatically stores the token as a
+   collection variable
+4. All subsequent requests automatically include the token as a Bearer token
+   in the Authorization header
+
+No manual copying of tokens is required.
+
+### Collection variables
+
+The collection uses Postman collection variables to keep requests connected.
+
+Examples of variables that are set automatically:
+
+- access_token
+- vehicle_id
+- session_id
+- payment_id
+
+These variables are populated by post-request scripts and reused in later
+requests. This allows you to create a resource in one request and
+automatically reference it in the next.
+
+You can view or inspect these values via:
+
+    Collection → Variables
+
+### Structure and usage
+
+The collection is organized to reflect real application flows, such as:
+
+- Authentication and users
+- Vehicles
+- Parking lots
+- Sessions (start, list, end)
+- Payments
+- Billing and summaries
+
+Some requests depend on data created by earlier requests, so it is recommended
+to execute requests within a folder from top to bottom.
+
+### Purpose
+
+The Postman collection is intended for:
+
+- Manual API testing
+- Exploring request and response structures
+- Debugging during development
+- Demonstrating API behavior
+
+It is not intended to replace automated tests, but to complement them.

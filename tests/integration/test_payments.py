@@ -1,6 +1,6 @@
 import requests
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8000/v2"
 
 #happy flow
 def test_get_payments(headers: dict) -> None:
@@ -21,7 +21,7 @@ def test_make_payment(headers: dict) -> None:
       "bank": "TestBank"
     }
     response = requests.post(f"{BASE_URL}/payments", headers=headers, json=payload_payment)
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     #finish the payment
     json = response.json()
